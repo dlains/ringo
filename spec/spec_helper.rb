@@ -1,6 +1,5 @@
 require 'bundler/setup'
 require 'ringo'
-require 'ringo/util/array_util'
 
 RSpec.configure do |config|
   # Enable flags like --only-failures and --next-failure
