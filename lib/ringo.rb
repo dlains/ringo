@@ -1,5 +1,5 @@
 require 'ringo/version'
-require 'ringo/util/array_util'
+require 'ringo/util'
 
 module Ringo
   # Your code goes here...
