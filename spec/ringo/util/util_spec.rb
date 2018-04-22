@@ -109,6 +109,20 @@ RSpec.describe Ringo::Util do
     end
   end
 
+  describe 'every?' do
+    it 'returns true if the list is empty' do
+      expect(Ringo::Util.every?([], -> (elem) { elem.is_a?(Numeric) })).to be_truthy
+    end
+
+    it 'returns false if an element in the list fails to satisfy the predicate' do
+      expect(Ringo::Util.every?([1, 's'], -> (elem) { elem.is_a?(Numeric) })).to be_falsey
+    end
+
+    it 'returns true if all elements in the list satisfy the predicate' do
+      expect(Ringo::Util.every?([1, 2], -> (elem) { elem.is_a?(Numeric) })).to be_truthy
+    end
+  end
+
   describe 'car' do
     it 'raises an error if the list is empty' do
       expect{Ringo::Util.car([])}.to raise_error(ArgumentError)
