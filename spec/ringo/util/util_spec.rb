@@ -110,6 +110,10 @@ RSpec.describe Ringo::Util do
   end
 
   describe 'every?' do
+    it 'raises an error if the list is not an array' do
+      expect{Ringo::Util.every?(1, -> (elem) { elem.is_a?(Numeric) })}.to raise_error(ArgumentError)
+    end
+
     it 'returns true if the list is empty' do
       expect(Ringo::Util.every?([], -> (elem) { elem.is_a?(Numeric) })).to be_truthy
     end
@@ -120,6 +124,24 @@ RSpec.describe Ringo::Util do
 
     it 'returns true if all elements in the list satisfy the predicate' do
       expect(Ringo::Util.every?([1, 2], -> (elem) { elem.is_a?(Numeric) })).to be_truthy
+    end
+  end
+
+  describe 'exists?' do
+    it 'raises an error if the list is not an array' do
+      expect{Ringo::Util.exists?(1, -> (elem) { elem.is_a?(Numeric) })}.to raise_error(ArgumentError)
+    end
+
+    it 'returns false if the list is empty' do
+      expect(Ringo::Util.exists?([], -> (elem) { elem.is_a?(Numeric) })).to be_falsey
+    end
+
+    it 'returns false if all elements in the list fails to satisfy the predicate' do
+      expect(Ringo::Util.exists?(['1', 's'], -> (elem) { elem.is_a?(Numeric) })).to be_falsey
+    end
+
+    it 'returns true if one element in the list satisfies the predicate' do
+      expect(Ringo::Util.exists?(['1', 2], -> (elem) { elem.is_a?(Numeric) })).to be_truthy
     end
   end
 
@@ -164,6 +186,28 @@ RSpec.describe Ringo::Util do
 
     it 'returns the correct element when nested' do
       expect(Ringo::Util.cdr(Ringo::Util.cdr([[1],[7,8],[[2]]]))).to eq([[[2]]])
+    end
+  end
+
+  describe 'cons' do
+    it 'raises an error if the argument is not a list' do
+      expect{Ringo::Util.cons(1, 2)}.to raise_error(ArgumentError)
+    end
+
+    it 'adds numbers to the start of an empty list' do
+      expect(Ringo::Util.cons(1, [])).to eq([1])
+    end
+
+    it 'adds numbers to the start of an existing list' do
+      expect(Ringo::Util.cons(2, [1, 3])).to eq([2,1,3])
+    end
+
+    it 'adds a list to the start of an empty list' do
+      expect(Ringo::Util.cons([1,2], [])).to eq([[1,2]])
+    end
+
+    it 'adds a list to the start of an existing list' do
+      expect(Ringo::Util.cons([1,2], ['a'])).to eq([[1,2],'a'])
     end
   end
 end

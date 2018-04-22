@@ -12,7 +12,7 @@ module Ringo
     #
     # Raises ArgumentError if list is nil or empty.
     def Util.element_at(list, n)
-      raise ArgumentError.new('The array can not be empty') if list.nil? || list.empty?
+      raise ArgumentError.new('The list can not be empty') if list.nil? || list.empty?
       return car(list) if n.zero?
       return element_at(cdr(list), n - 1)
     end
@@ -23,7 +23,7 @@ module Ringo
   # Returns an list with +count+ entries of +value+.
   def Util.duple(count, value)
     return [] if count.zero?
-    return [value] + duple(count - 1, value)
+    return cons(value, duple(count - 1, value))
   end
 
   # Wrap each element in +list+ in its own list.
@@ -58,7 +58,7 @@ module Ringo
   # Returns a list where all elements match the predicate.
   def Util.filter_in(list, pred)
     return list if list.nil? || list.empty?
-    return [car(list)] + filter_in(cdr(list), pred) if pred.call(car(list))
+    return cons(car(list), filter_in(cdr(list), pred)) if pred.call(car(list))
     return filter_in(cdr(list), pred)
   end
 
@@ -66,9 +66,20 @@ module Ringo
   #
   # Returns true if every element satisfies the predicate, false otherwise.
   def Util.every?(list, pred)
+    raise ArgumentError.new('Must pass a valid list') unless list.is_a?(Array)
     return true if list.empty?
     return every?(cdr(list), pred) if pred.call(car(list))
     return false
+  end
+
+  # Check if any element in +list+ satisfies +pred+.
+  #
+  # Return *true* if any element in +list+ satisfied +pred+, *false* otherwise.
+  def Util.exists?(list, pred)
+    raise ArgumentError.new('Must pass a valid list') unless list.is_a?(Array)
+    return false if list.empty?
+    return exists?(cdr(list), pred) unless pred.call(car(list))
+    return true
   end
 
   # The car of a list is the first element.
@@ -91,5 +102,11 @@ module Ringo
     raise ArgumentError.new('Can only get the cdr from a list') unless list.is_a?(Array)
     raise ArgumentError.new('Can not get the cdr from an empty list') if list.empty?
     return list.slice(1, list.size)
+  end
+
+  # Add +exp+ to the front of the +list+.
+  def Util.cons(exp, list)
+    raise ArgumentError.new('Can only cons onto a list') unless list.is_a?(Array)
+    return list.unshift(exp)
   end
 end

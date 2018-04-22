@@ -52,4 +52,7 @@ build-iPhoneSimulator/
 # RSpec failure tracking
 .rspec_status
 
+# Byebug
+.byebug_history
+
 .DS_Store
