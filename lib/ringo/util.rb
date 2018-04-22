@@ -62,6 +62,15 @@ module Ringo
     return filter_in(cdr(list), pred)
   end
 
+  # Check every element in list agains the predicate.
+  #
+  # Returns true if every element satisfies the predicate, false otherwise.
+  def Util.every?(list, pred)
+    return true if list.empty?
+    return every?(cdr(list), pred) if pred.call(car(list))
+    return false
+  end
+
   # The car of a list is the first element.
   #
   # Return the first element of the list.
