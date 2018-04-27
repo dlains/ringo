@@ -1,3 +1,17 @@
 #!/usr/bin/env ruby
 
 require 'ringo'
+# TODO: Create an options processing class and move the startup code there.
+# require 'ringo/cli'
+# Ringo::CLI.start
+
+# Only a single option for now. Running ringo without command line arguments will
+# start an interactive session. Running ringo with a file will run the code in
+# the file.
+if ARGV.length > 1
+  puts "Usage: ringo [script]"
+elsif ARGV.length == 1
+  Ringo::Runner.new.run_file(ARGV[0])
+else
+  Ringo::Runner.new.run_prompt
+end

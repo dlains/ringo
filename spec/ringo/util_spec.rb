@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 RSpec.describe Ringo::Util do
-  describe 'length' do
+  describe '::length' do
     it 'returns zero if the list is nil' do
       expect(Ringo::Util.length(nil)).to eq(0)
     end
@@ -19,7 +19,7 @@ RSpec.describe Ringo::Util do
     end
   end
 
-  describe 'element_at' do
+  describe '::element_at' do
     it 'raises an error if the list is empty' do
       expect{Ringo::Util.element_at([], 1)}.to raise_error(ArgumentError)
     end
@@ -33,7 +33,7 @@ RSpec.describe Ringo::Util do
     end
   end
 
-  describe 'duple' do
+  describe '::duple' do
     it 'returns an empty list if count is zero' do
       expect(Ringo::Util.duple(0, 'a')).to eq([])
     end
@@ -51,7 +51,7 @@ RSpec.describe Ringo::Util do
     end
   end
 
-  describe 'down' do
+  describe '::down' do
     it 'raises an error if the list is nil' do
       expect{Ringo::Util.down(nil)}.to raise_error(ArgumentError)
     end
@@ -77,7 +77,7 @@ RSpec.describe Ringo::Util do
     end
   end
 
-  describe 'swapper' do
+  describe '::swapper' do
     it 'returns nil if the list is nil' do
       expect(Ringo::Util.swapper(1, 2, nil)).to be_nil
     end
@@ -95,7 +95,7 @@ RSpec.describe Ringo::Util do
     end
   end
 
-  describe 'filter_in' do
+  describe '::filter_in' do
     it 'returns nil if the list is nil' do
       expect(Ringo::Util.filter_in(nil, -> (elem) { elem.is_a?(Numeric) })).to be_nil
     end
@@ -109,7 +109,7 @@ RSpec.describe Ringo::Util do
     end
   end
 
-  describe 'every?' do
+  describe '::every?' do
     it 'raises an error if the list is not an array' do
       expect{Ringo::Util.every?(1, -> (elem) { elem.is_a?(Numeric) })}.to raise_error(ArgumentError)
     end
@@ -127,7 +127,7 @@ RSpec.describe Ringo::Util do
     end
   end
 
-  describe 'exists?' do
+  describe '::exists?' do
     it 'raises an error if the list is not an array' do
       expect{Ringo::Util.exists?(1, -> (elem) { elem.is_a?(Numeric) })}.to raise_error(ArgumentError)
     end
@@ -145,7 +145,7 @@ RSpec.describe Ringo::Util do
     end
   end
 
-  describe 'car' do
+  describe '::car' do
     it 'raises an error if the list is empty' do
       expect{Ringo::Util.car([])}.to raise_error(ArgumentError)
     end
@@ -167,7 +167,7 @@ RSpec.describe Ringo::Util do
     end
   end
 
-  describe 'cdr' do
+  describe '::cdr' do
     it 'raises an error if the list is empty' do
       expect{Ringo::Util.cdr([])}.to raise_error(ArgumentError)
     end
@@ -189,7 +189,7 @@ RSpec.describe Ringo::Util do
     end
   end
 
-  describe 'cons' do
+  describe '::cons' do
     it 'raises an error if the argument is not a list' do
       expect{Ringo::Util.cons(1, 2)}.to raise_error(ArgumentError)
     end
