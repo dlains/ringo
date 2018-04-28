@@ -1,9 +1,9 @@
 require 'ringo/runner'
+require 'ringo/token'
 require 'ringo/version'
 require 'ringo/util'
 
 require 'ringo/scanner/lox_scanner'
-require 'ringo/scanner/token'
 
 module Ringo
   @@had_error = false
