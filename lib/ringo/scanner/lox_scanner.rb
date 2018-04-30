@@ -37,7 +37,7 @@ module Ringo::Scanner
         scan_token
       end
 
-      @tokens << Token.new(:eof, '', nil, @line)
+      add_token(:eof)
       @tokens
     end
 
@@ -88,7 +88,7 @@ module Ringo::Scanner
         add_token(match?('=') ? :greater_equal : :greater)
       when '"'
         string
-      when /[0-9]/
+      when /[[:digit:]]/
         number
       when /[[:alpha:]_]/
         identifier
@@ -215,7 +215,7 @@ module Ringo::Scanner
 
     # Create a Token object and add it to the +@tokens+ array.
     def add_token(type, literal = nil)
-      @tokens << Token.new(type, token_text, literal, @line)
+      @tokens << Ringo::Token.new(type, token_text, literal, @line)
     end
 
     # Extract the token text from the source code.

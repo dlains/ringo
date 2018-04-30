@@ -1,7 +1,7 @@
 require 'spec_helper'
 
-RSpec.describe Ringo::Scanner::Token do
-  subject { Ringo::Scanner::Token.new(:lparen, '(', '(', 1) }
+RSpec.describe Ringo::Token do
+  subject { Ringo::Token.new(:lparen, '(', '(', 1) }
 
   describe '#type' do
     it 'returns the correct type' do

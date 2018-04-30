@@ -109,11 +109,22 @@ RSpec.describe Ringo::Scanner::LoxScanner do
 
     it 'can find identifiers' do
       scanner = make_scanner('var something = 1')
-      scanner.tokens.each { |t| puts t.to_s }
       expect(scanner.tokens.length).to eq(5)
       expect(scanner.tokens[0].lexeme).to eq('var')
       expect(scanner.tokens[0].type).to eq(:var)
       expect(scanner.tokens[1].lexeme).to eq('something')
+      expect(scanner.tokens[1].type).to eq(:identifier)
+      expect(scanner.tokens[2].lexeme).to eq('=')
+      expect(scanner.tokens[3].lexeme).to eq('1')
+      expect(scanner.tokens[4].type).to eq(:eof)
+    end
+
+    it 'can find identifiers that start with an underscore' do
+      scanner = make_scanner('var _something = 1')
+      expect(scanner.tokens.length).to eq(5)
+      expect(scanner.tokens[0].lexeme).to eq('var')
+      expect(scanner.tokens[0].type).to eq(:var)
+      expect(scanner.tokens[1].lexeme).to eq('_something')
       expect(scanner.tokens[1].type).to eq(:identifier)
       expect(scanner.tokens[2].lexeme).to eq('=')
       expect(scanner.tokens[3].lexeme).to eq('1')

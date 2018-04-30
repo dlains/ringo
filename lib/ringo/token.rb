@@ -1,4 +1,4 @@
-module Ringo::Scanner
+module Ringo
 
   # Represents a single token from the source code. The LoxScanner creates
   # tokens as it scans the source code.
