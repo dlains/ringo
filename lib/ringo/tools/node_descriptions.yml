@@ -1,0 +1,25 @@
+expr:
+  extends: Object
+
+binary:
+  extends: Ringo::Expr
+  attributes:
+    left: Ringo::Expr
+    operator: Ringo::Token
+    right: Ringo::Expr
+
+grouping:
+  extends: Ringo::Expr
+  attributes:
+    expression: Ringo::Expr
+
+literal:
+  extends: Ringo::Expr
+  attributes:
+    value: Object
+
+unary:
+  extends: Ringo::Expr
+  attributes:
+    operator: Ringo::Token
+    right: Ringo::Expr
