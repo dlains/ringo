@@ -8,6 +8,8 @@ require 'ringo/parser/lox_parser'
 require 'ringo/tools/node_generator'
 require 'ringo/tools/ast_printer'
 
+require 'ringo/errors/parse_error'
+
 module Ringo
   # Generate the AST node classes defined in node_descriptions.yml.
   Tools::NodeGenerator.run("#{__dir__}/ringo/tools/node_descriptions.yml")

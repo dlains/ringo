@@ -10,6 +10,10 @@ module Ringo::Tools
       parenthesize(binary.operator.lexeme, binary.left, binary.right)
     end
 
+    def visit_conditional(conditional)
+      parenthesize('?', conditional.expression, conditional.then_branch, conditional.else_branch)
+    end
+
     def visit_grouping(grouping)
       parenthesize('group', grouping.expression)
     end

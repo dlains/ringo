@@ -59,6 +59,10 @@ module Ringo::Scanner
         add_token(:rbrace)
       when ','
         add_token(:comma)
+      when '?'
+        add_token(:question)
+      when ':'
+        add_token(:colon)
       when '.'
         add_token(:dot)
       when '-'
