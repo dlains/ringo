@@ -27,9 +27,14 @@ module Ringo
 
     def run(source)
       scanner = Ringo::Scanner::LoxScanner.new(source)
-      scanner.tokens.each do |token|
-        puts token
-      end
+      scanner.scan
+      parser  = Ringo::Parser::LoxParser.new(scanner.tokens)
+      expression = parser.parse
+
+      # Stop if there was an error.
+      return if Ringo.had_error?
+
+      puts Ringo::Tools::AstPrinter.new.print(expression)
     end
   end
 

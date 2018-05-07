@@ -4,6 +4,7 @@ require 'ringo/version'
 require 'ringo/util'
 
 require 'ringo/scanner/lox_scanner'
+require 'ringo/parser/lox_parser'
 require 'ringo/tools/node_generator'
 require 'ringo/tools/ast_printer'
 
@@ -15,6 +16,14 @@ module Ringo
 
   def self.had_error?
     @@had_error
+  end
+
+  def self.error(token, message)
+    if token.type == :eof
+      report_error(token.line, " at end #{message}")
+    else
+      report_error(token.line, " at '#{token.lexeme}' #{message}")
+    end
   end
 
   def self.report_error(line, message)

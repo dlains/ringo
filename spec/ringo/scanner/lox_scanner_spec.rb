@@ -131,10 +131,4 @@ RSpec.describe Ringo::Scanner::LoxScanner do
       expect(scanner.tokens[4].type).to eq(:eof)
     end
   end
-
-  def make_scanner(source)
-    scanner = Ringo::Scanner::LoxScanner.new(source)
-    scanner.scan
-    scanner
-  end
 end
