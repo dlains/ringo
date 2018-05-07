@@ -1,2 +1,4 @@
-class ParseError < StandardError
+module Ringo::Errors
+  class ParseError < StandardError
+  end
 end

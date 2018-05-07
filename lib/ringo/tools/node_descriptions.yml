@@ -8,6 +8,13 @@ binary:
     operator: Ringo::Token
     right: Ringo::Expr
 
+conditional:
+  extends: Ringo::Expr
+  attributes:
+    expression: Ringo::Expr
+    then_branch: Ringo::Expr
+    else_branch: Ringo::Expr
+
 grouping:
   extends: Ringo::Expr
   attributes:
