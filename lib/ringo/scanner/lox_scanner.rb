@@ -27,7 +27,7 @@ module Ringo::Scanner
       @keywords['this']   = :this
       @keywords['true']   = :true
       @keywords['var']    = :var
-      @keywords['while']  = :whil
+      @keywords['while']  = :while
     end
 
     # Retrieve an array of Tokens found in the source code.

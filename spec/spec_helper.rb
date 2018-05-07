@@ -13,3 +13,17 @@ RSpec.configure do |config|
     c.syntax = :expect
   end
 end
+
+# Helper to create a LoxScanner with the supplied source code.
+def make_scanner(source)
+  scanner = Ringo::Scanner::LoxScanner.new(source)
+  scanner.scan
+  scanner
+end
+
+# Helper to create a printed AST tree from the provided source code.
+def make_ast(source)
+  scanner = make_scanner(source)
+  parser = Ringo::Parser::LoxParser.new(scanner.tokens)
+  Ringo::Tools::AstPrinter.new.print(parser.parse)
+end
