@@ -5,19 +5,26 @@ require 'ringo/util'
 
 require 'ringo/scanner/lox_scanner'
 require 'ringo/parser/lox_parser'
+require 'ringo/interpreter/lox_interpreter'
 require 'ringo/tools/node_generator'
 require 'ringo/tools/ast_printer'
 
 require 'ringo/errors/parse_error'
+require 'ringo/errors/runtime_error'
 
 module Ringo
   # Generate the AST node classes defined in node_descriptions.yml.
   Tools::NodeGenerator.run("#{__dir__}/ringo/tools/node_descriptions.yml")
 
   @@had_error = false
+  @@had_runtime_error = false
 
   def self.had_error?
     @@had_error
+  end
+
+  def self.had_runtime_error?
+    @@had_runtime_error
   end
 
   def self.error(token, message)
@@ -26,6 +33,11 @@ module Ringo
     else
       report_error(token.line, " at '#{token.lexeme}' #{message}")
     end
+  end
+
+  def self.runtime_error(error)
+    STDERR.puts "#{error.message} [line: #{error.token.line}]"
+    @@had_runtime_error = true
   end
 
   def self.report_error(line, message)
