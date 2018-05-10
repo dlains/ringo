@@ -34,7 +34,11 @@ module Ringo
       # Stop if there was an error.
       return if Ringo.had_error?
 
-      puts Ringo::Tools::AstPrinter.new.print(expression)
+      interpreter.interpret(expression)
+    end
+
+    def interpreter
+      @interpreter ||= Ringo::Interpreter::LoxInterpreter.new
     end
   end
 
