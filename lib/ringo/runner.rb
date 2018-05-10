@@ -34,7 +34,8 @@ module Ringo
       # Stop if there was an error.
       return if Ringo.had_error?
 
-      interpreter.interpret(expression)
+      value = interpreter.interpret(expression)
+      puts value
     end
 
     def interpreter
