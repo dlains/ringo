@@ -6,7 +6,10 @@ module Ringo::Parser
   # continues parsing the tokens.
   #
   # The current grammar is as follows:
-  #
+  # program              -> statement* EOF ;
+  # statement            -> exprStmt | printStmt ;
+  # exprStmt             -> expression ';' ;
+  # printStmt            -> 'print' expression ';' ;
   # expression           -> comma
   # comma                -> conditional (',' conditional)* ;
   # conditional          -> equality ('?' expression ':' conditional)? ;
@@ -28,7 +31,12 @@ module Ringo::Parser
     # The AST generated from parsing the tokens is returned, or nil if there
     # was a parse error.
     def parse
-      return expression
+      statements = []
+      while !at_end?
+        statements << statement
+      end
+
+      return statements
     rescue Ringo::Errors::ParseError
       return nil
     end
@@ -112,7 +120,27 @@ module Ringo::Parser
       end
     end
 
-    # Top level Lox grammar rule. This starts the recursive descent parser.
+    # Top level Lox grammar rule. A full program is a list of statements.
+    def statement
+      return print_statement if match?(:print)
+      return expression_statement
+    end
+
+    # A kind of statement that prints the result of the given expression.
+    def print_statement
+      value = expression
+      consume(:semicolon, "Expect ';' after value.")
+      return Ringo::Print.new(value)
+    end
+
+    # A kind of statement that is just an expression followed by a semicolon.
+    def expression_statement
+      expr = expression
+      consume(:semicolon, "Expect ';' after expression.")
+      return Ringo::Expression.new(expr)
+    end
+
+    # An expression in the Lox language.
     def expression
       comma
     end

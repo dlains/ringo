@@ -5,14 +5,28 @@ module Ringo::Interpreter
   # LoxParser and performs the actions specified in the source code.
   class LoxInterpreter
 
-    # Kick off the interpreter for the given expression. If a runtime error occurs
+    # Kick off the interpreter for the given statements. If a runtime error occurs
     # it is caught here and reported to the Ringo error routines, otherwise a
     # string representation of the result of the expression is returned to the caller.
-    def interpret(expression)
-      value = evaluate(expression)
-      stringify(value)
+    def interpret(statements)
+      statements.each do |statement|
+        execute(statement)
+      end
     rescue Ringo::Errors::RuntimeError => error
       Ringo.runtime_error(error)
+    end
+
+    # Handle expression statements.
+    def visit_expression(statement)
+      evaluate(statement.expression)
+      return nil
+    end
+
+    # Handle print statements.
+    def visit_print(statement)
+      value = evaluate(statement.expression)
+      puts stringify(value)
+      return nil
     end
 
     # Handle binary expressions. The +plus+ case is overloaded to add either numbers
@@ -99,7 +113,14 @@ module Ringo::Interpreter
 
     private
 
-    # Evaluate is the entry point for the visitor pattern. It calles +accept+ on
+    # Execute is the entry point for visiting statements. It calls +accept+ on
+    # the given statement which then recursively calls +accept+ on the leaf nodes
+    # in the AST.
+    def execute(statement)
+      statement.accept(self)
+    end
+
+    # Evaluate is the entry point for the visitor pattern. It calls +accept+ on
     # the given expression which then recursively calls +accept+ on the leaf nodes
     # in the AST.
     def evaluate(expression)

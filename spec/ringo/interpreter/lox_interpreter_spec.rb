@@ -5,63 +5,63 @@ RSpec.describe Ringo::Interpreter::LoxInterpreter do
 
   describe '#interpret' do
     it 'can evaluate an addition expression' do
-      expression = make_expression('2 + 4')
-      expect(subject.interpret(expression)).to eq('6.0')
+      statements = make_statements('print 2 + 4;')
+      expect{subject.interpret(statements)}.to output("6.0\n").to_stdout
     end
 
     it 'can evaluate a string contatenation expression' do
-      expression = make_expression('"Hello," + " world!"')
-      expect(subject.interpret(expression)).to eq('Hello, world!')
+      statements = make_statements('print "Hello," + " world!";')
+      expect{subject.interpret(statements)}.to output("Hello, world!\n").to_stdout
     end
 
     it 'can evaluate a grouping expression correctly' do
-      expression = make_expression('(5 - 1) * 4')
-      expect(subject.interpret(expression)).to eq('16.0')
+      statements = make_statements('print (5 - 1) * 4;')
+      expect{subject.interpret(statements)}.to output("16.0\n").to_stdout
     end
 
     it 'can evaluate a greater than expression correctly' do
-      expression = make_expression('5 >= 9')
-      expect(subject.interpret(expression)).to eq('false')
+      statements = make_statements('print 5 >= 9;')
+      expect{subject.interpret(statements)}.to output("false\n").to_stdout
     end
 
     it 'can evaluate greater expression correctly' do
-      expression = make_expression('5 > 2')
-      expect(subject.interpret(expression)).to eq('true')
+      statements = make_statements('print 5 > 2;')
+      expect{subject.interpret(statements)}.to output("true\n").to_stdout
     end
 
     it 'can evaluate a less than expression correctly' do
-      expression = make_expression('9 <= 8')
-      expect(subject.interpret(expression)).to eq('false')
+      statements = make_statements('print 9 <= 8;')
+      expect{subject.interpret(statements)}.to output("false\n").to_stdout
     end
 
     it 'can evaluate less expression correctly' do
-      expression = make_expression('2 < 5')
-      expect(subject.interpret(expression)).to eq('true')
+      statements = make_statements('print 2 < 5;')
+      expect{subject.interpret(statements)}.to output("true\n").to_stdout
     end
 
     it 'can evaluate an equivalence expression' do
-      expression = make_expression('1 == 1')
-      expect(subject.interpret(expression)).to eq('true')
+      statements = make_statements('print 1 == 1;')
+      expect{subject.interpret(statements)}.to output("true\n").to_stdout
     end
 
     it 'can evaluate a not equal expression' do
-      expression = make_expression('1 != 1')
-      expect(subject.interpret(expression)).to eq('false')
+      statements = make_statements('print 1 != 1;')
+      expect{subject.interpret(statements)}.to output("false\n").to_stdout
     end
 
     it 'can evaluate a comma expression' do
-      expression = make_expression('2 - 1, 3 * 5')
-      expect(subject.interpret(expression)).to eq('15.0')
+      statements = make_statements('print 2 - 1, 3 * 5;')
+      expect{subject.interpret(statements)}.to output("15.0\n").to_stdout
     end
 
     it 'can evaluate a true conditional expression' do
-      expression = make_expression('1 <= 2 ? 3 + 3 : 4 + 4')
-      expect(subject.interpret(expression)).to eq('6.0')
+      statements = make_statements('print 1 <= 2 ? 3 + 3 : 4 + 4;')
+      expect{subject.interpret(statements)}.to output("6.0\n").to_stdout
     end
 
     it 'can evaluate a false conditional expression' do
-      expression = make_expression('1 >= 2 ? 3 + 3 : 4 + 4')
-      expect(subject.interpret(expression)).to eq('8.0')
+      statements = make_statements('print 1 >= 2 ? 3 + 3 : 4 + 4;')
+      expect{subject.interpret(statements)}.to output("8.0\n").to_stdout
     end
   end
 end

@@ -30,3 +30,16 @@ unary:
   attributes:
     operator: Ringo::Token
     right: Ringo::Expr
+
+stmt:
+  extends: Object
+
+expression:
+  extends: Ringo::Stmt
+  attributes:
+    expression: Ringo::Expr
+
+print:
+  extends: Ringo::Stmt
+  attributes:
+    expression: Ringo::Expr
