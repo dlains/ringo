@@ -13,7 +13,8 @@ module Ringo::Parser
   # exprStmt             -> expression ';' ;
   # printStmt            -> 'print' expression ';' ;
   # expression           -> comma
-  # comma                -> conditional (',' conditional)* ;
+  # comma                -> assignment (',' assignment)* ;
+  # assignment           -> identifier '=' assignment | comparison ;
   # conditional          -> equality ('?' expression ':' conditional)? ;
   # equality             -> comparison ( ( "!=" | "==" ) comparison )* ;
   # comparison           -> addition ( ( ">" | ">=" | "<" | "<=" ) addition )* ;
@@ -172,15 +173,33 @@ module Ringo::Parser
     # Handle the comma operator. It re-uses the Binary expression and groups
     # each pair of expressions.
     def comma
-      expr = conditional
+      expr = assignment
 
       while match?(:comma)
         operator = previous
-        right = conditional
+        right = assignment
         expr = Ringo::Binary.new(expr, operator, right)
       end
 
       expr
+    end
+
+    def assignment
+      expr = conditional
+
+      if match?(:equal)
+        equals = previous
+        value = expression
+
+        if expr.is_a?(Ringo::Variable)
+          name = expr.name
+          return Ringo::Assign.new(name, value)
+        end
+
+        error(equals, "Invalid assignment target.")
+      end
+
+      return expr
     end
 
     # Handle the ternary operator 'expr ? expr : expr'.

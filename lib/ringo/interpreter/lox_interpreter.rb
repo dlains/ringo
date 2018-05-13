@@ -24,7 +24,7 @@ module Ringo::Interpreter
       value = nil
       value = evaluate(statement.initializer) unless statement.initializer.nil?
 
-      @environment.define(statement.name.lexeme, value)
+      @environment.define(statement.name, value)
       return nil
     end
 
@@ -90,6 +90,15 @@ module Ringo::Interpreter
       end
 
       return nil
+    end
+
+    # Handle assignment expressions. This re-assigns a new value to an existing
+    # variable. If the variable name does not exist already a runtime error is raised.
+    def visit_assign(assignment)
+      value = evaluate(assignment.value)
+
+      @environment.assign(assignment.name, value)
+      return value
     end
 
     # Handle the ternary conditional operator. It first evaluates the main expression,

@@ -73,5 +73,10 @@ RSpec.describe Ringo::Interpreter::LoxInterpreter do
       statements = make_statements('var a;print a;')
       expect{subject.interpret(statements)}.to output("nil\n").to_stdout
     end
+
+    it 'can handle variable re-assignment' do
+      statements = make_statements("var a = 1;\nprint a;\na = 2;\nprint a;\n")
+      expect{subject.interpret(statements)}.to output("1.0\n2.0\n").to_stdout
+    end
   end
 end
