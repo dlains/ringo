@@ -4,6 +4,9 @@ module Ringo::Interpreter
   # visitor pattern to recursively walk through the AST nodes provided by the
   # LoxParser and performs the actions specified in the source code.
   class LoxInterpreter
+    def initialize
+      @environment = Ringo::Environment.new
+    end
 
     # Kick off the interpreter for the given statements. If a runtime error occurs
     # it is caught here and reported to the Ringo error routines, otherwise a
@@ -14,6 +17,15 @@ module Ringo::Interpreter
       end
     rescue Ringo::Errors::RuntimeError => error
       Ringo.runtime_error(error)
+    end
+
+    # Handle var declarations.
+    def visit_var(statement)
+      value = nil
+      value = evaluate(statement.initializer) unless statement.initializer.nil?
+
+      @environment.define(statement.name.lexeme, value)
+      return nil
     end
 
     # Handle expression statements.
@@ -27,6 +39,11 @@ module Ringo::Interpreter
       value = evaluate(statement.expression)
       puts stringify(value)
       return nil
+    end
+
+    # Handle variable expressions.
+    def visit_variable(expression)
+      return @environment.get(expression.name.lexeme)
     end
 
     # Handle binary expressions. The +plus+ case is overloaded to add either numbers

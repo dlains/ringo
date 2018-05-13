@@ -6,7 +6,9 @@ module Ringo::Parser
   # continues parsing the tokens.
   #
   # The current grammar is as follows:
-  # program              -> statement* EOF ;
+  # program              -> declaration* EOF ;
+  # declaration          -> varDecl | statement ;
+  # varDecl              -> 'var' IDENTIFIER ( '=' expression )? ';' ;
   # statement            -> exprStmt | printStmt ;
   # exprStmt             -> expression ';' ;
   # printStmt            -> 'print' expression ';' ;
@@ -21,6 +23,7 @@ module Ringo::Parser
   #                       | primary ;
   # primary              -> NUMBER | STRING | 'false' | 'true' | 'nil'
   #                       | '(' expression ')'
+  #                       | IDENTIFIER
   class LoxParser
     def initialize(tokens)
       @tokens = tokens
@@ -33,7 +36,7 @@ module Ringo::Parser
     def parse
       statements = []
       while !at_end?
-        statements << statement
+        statements << declaration
       end
 
       return statements
@@ -120,7 +123,28 @@ module Ringo::Parser
       end
     end
 
-    # Top level Lox grammar rule. A full program is a list of statements.
+    # Top level Lox grammar rule. A full program is a list of declarations.
+    def declaration
+      return var_declaration if match?(:var)
+      return statement
+    rescue Ringo::Errors::ParseError => error
+      synchronize
+      return nil
+    end
+
+    # Create a variable declaration of the form 'var x;', or 'var x = 2;'
+    # If there is no initializer the var will be initialized to nil.
+    def var_declaration
+      name = consume(:identifier, 'Expect variable name.')
+
+      initializer = nil
+      initializer = expression if match?(:equal)
+
+      consume(:semicolon, "Expect ';' after variable declaration.")
+      return Ringo::Var.new(name, initializer)
+    end
+
+    # Fall through to statement if the declaraction is not a variable declaration.
     def statement
       return print_statement if match?(:print)
       return expression_statement
@@ -242,6 +266,8 @@ module Ringo::Parser
       return Ringo::Literal.new(true)  if match?(:true)
       return Ringo::Literal.new(nil)   if match?(:nil)
       return Ringo::Literal.new(previous.literal) if match?(:number, :string)
+      return Ringo::Variable.new(previous) if match?(:identifier)
+
       if match?(:lparen)
         expr = expression
         consume(:rparen, 'Expect ) after expression.')

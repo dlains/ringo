@@ -36,5 +36,15 @@ RSpec.describe Ringo::Parser::LoxParser do
       result = make_ast('2 > 1 ? true : false;')
       expect(result).to eq('(; (? (> 2.0 1.0) true false))')
     end
+
+    it 'correctly parses a variable declaration' do
+      result = make_ast('var a = 2;')
+      expect(result).to eq('(var a = 2.0)')
+    end
+
+    it 'correctly parses a nil variable declaration' do
+      result = make_ast('var a;')
+      expect(result).to eq('(var a)')
+    end
   end
 end

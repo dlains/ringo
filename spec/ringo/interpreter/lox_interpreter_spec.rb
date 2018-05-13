@@ -63,5 +63,15 @@ RSpec.describe Ringo::Interpreter::LoxInterpreter do
       statements = make_statements('print 1 >= 2 ? 3 + 3 : 4 + 4;')
       expect{subject.interpret(statements)}.to output("8.0\n").to_stdout
     end
+
+    it 'can handle variable declarations' do
+      statements = make_statements('var a = 1;print a;')
+      expect{subject.interpret(statements)}.to output("1.0\n").to_stdout
+    end
+
+    it 'initializes a variable to nil' do
+      statements = make_statements('var a;print a;')
+      expect{subject.interpret(statements)}.to output("nil\n").to_stdout
+    end
   end
 end
