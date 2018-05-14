@@ -2,8 +2,21 @@ module Ringo::Tools
 
   # Show a visual representation of the passed in expression.
   class AstPrinter
-    def print(expression)
-      expression.accept(self)
+    def print(statement)
+      statement.accept(self)
+    end
+
+    def visit_expression(statement)
+      return parenthesize(';', statement.expression)
+    end
+
+    def visit_print(statement)
+      return parenthesize('print', statement.expression)
+    end
+
+    def visit_var(statement)
+      return parenthesize('var', statement.name.lexeme) if statement.initializer.nil?
+      return parenthesize('var', statement.name.lexeme, '=', statement.initializer)
     end
 
     def visit_binary(binary)
@@ -31,7 +44,7 @@ module Ringo::Tools
     private
 
     def parenthesize(name, *args)
-      "(#{name} #{args.map { |arg| arg.accept(self) }.join(' ')})"
+      "(#{name} #{args.map { |arg| arg.respond_to?(:accept) ? arg.accept(self) : arg }.join(' ')})"
     end
   end
 end

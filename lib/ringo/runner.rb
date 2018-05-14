@@ -29,13 +29,12 @@ module Ringo
       scanner = Ringo::Scanner::LoxScanner.new(source)
       scanner.scan
       parser  = Ringo::Parser::LoxParser.new(scanner.tokens)
-      expression = parser.parse
+      statements = parser.parse
 
       # Stop if there was an error.
       return if Ringo.had_error?
 
-      value = interpreter.interpret(expression)
-      puts value
+      interpreter.interpret(statements)
     end
 
     def interpreter

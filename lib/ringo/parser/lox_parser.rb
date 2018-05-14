@@ -6,9 +6,18 @@ module Ringo::Parser
   # continues parsing the tokens.
   #
   # The current grammar is as follows:
-  #
+  # program              -> declaration* EOF ;
+  # declaration          -> varDecl | statement ;
+  # varDecl              -> 'var' IDENTIFIER ( '=' expression )? ';' ;
+  # statement            -> exprStmt
+  #                       | printStmt
+  #                       | block ;
+  # exprStmt             -> expression ';' ;
+  # printStmt            -> 'print' expression ';' ;
+  # block                -> '{' declaration* '}' ;
   # expression           -> comma
-  # comma                -> conditional (',' conditional)* ;
+  # comma                -> assignment (',' assignment)* ;
+  # assignment           -> identifier '=' assignment | comparison ;
   # conditional          -> equality ('?' expression ':' conditional)? ;
   # equality             -> comparison ( ( "!=" | "==" ) comparison )* ;
   # comparison           -> addition ( ( ">" | ">=" | "<" | "<=" ) addition )* ;
@@ -18,6 +27,7 @@ module Ringo::Parser
   #                       | primary ;
   # primary              -> NUMBER | STRING | 'false' | 'true' | 'nil'
   #                       | '(' expression ')'
+  #                       | IDENTIFIER
   class LoxParser
     def initialize(tokens)
       @tokens = tokens
@@ -28,7 +38,12 @@ module Ringo::Parser
     # The AST generated from parsing the tokens is returned, or nil if there
     # was a parse error.
     def parse
-      return expression
+      statements = []
+      while !at_end?
+        statements << declaration
+      end
+
+      return statements
     rescue Ringo::Errors::ParseError
       return nil
     end
@@ -112,7 +127,60 @@ module Ringo::Parser
       end
     end
 
-    # Top level Lox grammar rule. This starts the recursive descent parser.
+    # Top level Lox grammar rule. A full program is a list of declarations.
+    def declaration
+      return var_declaration if match?(:var)
+      return statement
+    rescue Ringo::Errors::ParseError => error
+      synchronize
+      return nil
+    end
+
+    # Create a variable declaration of the form 'var x;', or 'var x = 2;'
+    # If there is no initializer the var will be initialized to nil.
+    def var_declaration
+      name = consume(:identifier, 'Expect variable name.')
+
+      initializer = nil
+      initializer = expression if match?(:equal)
+
+      consume(:semicolon, "Expect ';' after variable declaration.")
+      return Ringo::Var.new(name, initializer)
+    end
+
+    # Fall through to statement if the declaraction is not a variable declaration.
+    def statement
+      return print_statement if match?(:print)
+      return Ringo::Block.new(block) if match?(:lbrace)
+      return expression_statement
+    end
+
+    # A kind of statement that prints the result of the given expression.
+    def print_statement
+      value = expression
+      consume(:semicolon, "Expect ';' after value.")
+      return Ringo::Print.new(value)
+    end
+
+    def block
+      statements = []
+
+      while !check?(:rbrace) && !at_end?
+        statements << declaration
+      end
+
+      consume(:rbrace, "Expect '}' after block.")
+      return statements
+    end
+
+    # A kind of statement that is just an expression followed by a semicolon.
+    def expression_statement
+      expr = expression
+      consume(:semicolon, "Expect ';' after expression.")
+      return Ringo::Expression.new(expr)
+    end
+
+    # An expression in the Lox language.
     def expression
       comma
     end
@@ -120,15 +188,33 @@ module Ringo::Parser
     # Handle the comma operator. It re-uses the Binary expression and groups
     # each pair of expressions.
     def comma
-      expr = conditional
+      expr = assignment
 
       while match?(:comma)
         operator = previous
-        right = conditional
+        right = assignment
         expr = Ringo::Binary.new(expr, operator, right)
       end
 
       expr
+    end
+
+    def assignment
+      expr = conditional
+
+      if match?(:equal)
+        equals = previous
+        value = expression
+
+        if expr.is_a?(Ringo::Variable)
+          name = expr.name
+          return Ringo::Assign.new(name, value)
+        end
+
+        error(equals, "Invalid assignment target.")
+      end
+
+      return expr
     end
 
     # Handle the ternary operator 'expr ? expr : expr'.
@@ -214,6 +300,8 @@ module Ringo::Parser
       return Ringo::Literal.new(true)  if match?(:true)
       return Ringo::Literal.new(nil)   if match?(:nil)
       return Ringo::Literal.new(previous.literal) if match?(:number, :string)
+      return Ringo::Variable.new(previous) if match?(:identifier)
+
       if match?(:lparen)
         expr = expression
         consume(:rparen, 'Expect ) after expression.')

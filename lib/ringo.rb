@@ -1,6 +1,7 @@
 require 'ringo/runner'
 require 'ringo/token'
 require 'ringo/version'
+require 'ringo/environment'
 require 'ringo/util'
 
 require 'ringo/scanner/lox_scanner'

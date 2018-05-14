@@ -1,6 +1,12 @@
 expr:
   extends: Object
 
+assign:
+  extends: Ringo::Expr
+  attributes:
+    name: Ringo::Token
+    value: Ringo::Expr
+
 binary:
   extends: Ringo::Expr
   attributes:
@@ -30,3 +36,32 @@ unary:
   attributes:
     operator: Ringo::Token
     right: Ringo::Expr
+
+variable:
+  extends: Ringo::Expr
+  attributes:
+    name: Ringo::Token
+
+stmt:
+  extends: Object
+
+expression:
+  extends: Ringo::Stmt
+  attributes:
+    expression: Ringo::Expr
+
+print:
+  extends: Ringo::Stmt
+  attributes:
+    expression: Ringo::Expr
+
+var:
+  extends: Ringo::Stmt
+  attributes:
+    name: Ringo::Token
+    initializer: Ringo::Expr
+
+block:
+  extends: Ringo::Stmt
+  attributes:
+    statements: Ringo::Stmt
