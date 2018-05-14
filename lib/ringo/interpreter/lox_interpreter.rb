@@ -41,6 +41,14 @@ module Ringo::Interpreter
       return nil
     end
 
+    # Handle a block of statements. A block creates a new scope, so a new
+    # environment is created and the current environment is set as the enclosing
+    # scope.
+    def visit_block(block)
+      execute_block(block.statements, Ringo::Environment.new(@environment))
+      return nil
+    end
+
     # Handle variable expressions.
     def visit_variable(expression)
       return @environment.get(expression.name.lexeme)
@@ -144,6 +152,23 @@ module Ringo::Interpreter
     # in the AST.
     def execute(statement)
       statement.accept(self)
+    end
+
+    # Execute a set of statements. This also provides the new local environment
+    # for the block. The block local environment shadows the current environment
+    # for the duration of the statements.
+    # TODO: I don't really like how the environment switch is handled. Perhaps have a stack of
+    #       environments, for each block entered push the new environment, then pop it at the end of the block.
+    def execute_block(statements, environment)
+      previous = @environment
+      begin
+        @environment = environment
+        statements.each do |statement|
+          execute(statement)
+        end
+      ensure
+        @environment = previous
+      end
     end
 
     # Evaluate is the entry point for the visitor pattern. It calls +accept+ on

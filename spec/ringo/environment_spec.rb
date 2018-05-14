@@ -26,23 +26,36 @@ RSpec.describe Ringo::Environment do
     it 'raises a runtime error if the variable name does not exist' do
       expect{subject.assign(token, 22)}.to raise_error(Ringo::Errors::RuntimeError)
     end
+
+    it 'searches enclosing scopes if the variable is not found' do
+      subject.define(token, 22)
+      local_scope = Ringo::Environment.new(subject)
+      local_scope.define(Ringo::Token.new(:identifier, 'y', nil, 2), 32)
+      local_scope.assign(token, 1)
+      expect(local_scope.get('x')).to eq(1.0)
+    end
   end
 
   describe '#get' do
     it 'returns a value from the environment' do
       subject.define(token, 22)
-      value = subject.get('x')
-      expect(value).to eq(22)
+      expect(subject.get('x')).to eq(22)
     end
 
     it 'returns a nil value from the environment' do
       subject.define(token, nil)
-      value = subject.get('x')
-      expect(value).to be_nil
+      expect(subject.get('x')).to be_nil
     end
 
     it 'raises a runtime error if the variable name does now exist' do
       expect{subject.get(token)}.to raise_error(Ringo::Errors::RuntimeError)
+    end
+
+    it 'searches enclosing scopes if the variable is not found' do
+      subject.define(token, 22)
+      local_scope = Ringo::Environment.new(subject)
+      local_scope.define(Ringo::Token.new(:identifier, 'y', nil, 2), 32)
+      expect(local_scope.get('x')).to eq(22.0)
     end
   end
 end

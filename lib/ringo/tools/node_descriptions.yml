@@ -60,3 +60,8 @@ var:
   attributes:
     name: Ringo::Token
     initializer: Ringo::Expr
+
+block:
+  extends: Ringo::Stmt
+  attributes:
+    statements: Ringo::Stmt

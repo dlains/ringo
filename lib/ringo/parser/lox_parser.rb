@@ -9,9 +9,12 @@ module Ringo::Parser
   # program              -> declaration* EOF ;
   # declaration          -> varDecl | statement ;
   # varDecl              -> 'var' IDENTIFIER ( '=' expression )? ';' ;
-  # statement            -> exprStmt | printStmt ;
+  # statement            -> exprStmt
+  #                       | printStmt
+  #                       | block ;
   # exprStmt             -> expression ';' ;
   # printStmt            -> 'print' expression ';' ;
+  # block                -> '{' declaration* '}' ;
   # expression           -> comma
   # comma                -> assignment (',' assignment)* ;
   # assignment           -> identifier '=' assignment | comparison ;
@@ -148,6 +151,7 @@ module Ringo::Parser
     # Fall through to statement if the declaraction is not a variable declaration.
     def statement
       return print_statement if match?(:print)
+      return Ringo::Block.new(block) if match?(:lbrace)
       return expression_statement
     end
 
@@ -156,6 +160,17 @@ module Ringo::Parser
       value = expression
       consume(:semicolon, "Expect ';' after value.")
       return Ringo::Print.new(value)
+    end
+
+    def block
+      statements = []
+
+      while !check?(:rbrace) && !at_end?
+        statements << declaration
+      end
+
+      consume(:rbrace, "Expect '}' after block.")
+      return statements
     end
 
     # A kind of statement that is just an expression followed by a semicolon.

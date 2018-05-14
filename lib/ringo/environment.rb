@@ -1,7 +1,8 @@
 module Ringo
   class Environment
-    def initialize
+    def initialize(enclosing = nil)
       @values = Hash.new
+      @enclosing = enclosing
     end
 
     def define(token, value)
@@ -9,16 +10,22 @@ module Ringo
     end
 
     def assign(token, value)
-      @values.fetch(token.lexeme) do
-        raise undefined_variable_error(token.lexeme)
+      if @values.has_key?(token.lexeme)
+        @values[token.lexeme] = value
+        return
       end
-      @values[token.lexeme] = value
+
+      unless @enclosing.nil?
+        @enclosing.assign(token, value)
+        return
+      end
+      raise undefined_variable_error(token.lexeme)
     end
 
     def get(name)
-      @values.fetch(name) do
-        raise undefined_variable_error(name)
-      end
+      return @values[name] if @values.has_key?(name)
+      return @enclosing.get(name) unless @enclosing.nil?
+      raise undefined_variable_error(name)
     end
 
     private
