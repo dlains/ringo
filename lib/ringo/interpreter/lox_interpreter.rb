@@ -34,6 +34,17 @@ module Ringo::Interpreter
       return nil
     end
 
+    # Handle a conditional if / else statement.
+    def visit_if(statement)
+      if is_truthy?(evaluate(statement.condition))
+        execute(statement.then_branch)
+      elsif !statement.else_branch.nil?
+        execute(statement.else_branch)
+      end
+
+      return nil
+    end
+
     # Handle print statements.
     def visit_print(statement)
       value = evaluate(statement.expression)

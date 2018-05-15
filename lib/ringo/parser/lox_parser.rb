@@ -10,9 +10,11 @@ module Ringo::Parser
   # declaration          -> varDecl | statement ;
   # varDecl              -> 'var' IDENTIFIER ( '=' expression )? ';' ;
   # statement            -> exprStmt
+  #                       | ifStmt
   #                       | printStmt
   #                       | block ;
   # exprStmt             -> expression ';' ;
+  # ifStmt               -> 'if' '(' expression ')' statement ( 'else' statement )? ;
   # printStmt            -> 'print' expression ';' ;
   # block                -> '{' declaration* '}' ;
   # expression           -> comma
@@ -150,9 +152,22 @@ module Ringo::Parser
 
     # Fall through to statement if the declaraction is not a variable declaration.
     def statement
+      return if_statement if match?(:if)
       return print_statement if match?(:print)
       return Ringo::Block.new(block) if match?(:lbrace)
       return expression_statement
+    end
+
+    # A conditional if / else statement.
+    def if_statement
+      consume(:lparen, "Expect '(' after 'if'.")
+      condition = expression
+      consume(:rparen, "Expect ')' after if condition.")
+
+      then_branch = statement
+      else_branch = match?(:else) ? statement : nil
+
+      return Ringo::If.new(condition, then_branch, else_branch)
     end
 
     # A kind of statement that prints the result of the given expression.

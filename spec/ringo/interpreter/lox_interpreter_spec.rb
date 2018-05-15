@@ -83,5 +83,15 @@ RSpec.describe Ringo::Interpreter::LoxInterpreter do
       statements = make_statements("var a = 1.0;\nvar b = 2.0;\n{\nvar a = 10.0;\nprint a;\nprint b;\n}print a;\nprint b;\n")
       expect{subject.interpret(statements)}.to output("10.0\n2.0\n1.0\n2.0\n").to_stdout
     end
+
+    it 'can handle a true conditional statement' do
+      statements = make_statements("var a = 10;if (a < 20) print a;")
+      expect{subject.interpret(statements)}.to output("10.0\n").to_stdout
+    end
+
+    it 'can handle a false conditional statement' do
+      statements = make_statements("var a = 10;if (a < 10) print a; else print \"Not Less\";")
+      expect{subject.interpret(statements)}.to output("Not Less\n").to_stdout
+    end
   end
 end

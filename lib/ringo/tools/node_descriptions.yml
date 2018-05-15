@@ -50,6 +50,13 @@ expression:
   attributes:
     expression: Ringo::Expr
 
+if:
+  extends: Ringo::Stmt
+  attributes:
+    condition: Ringo::Expr
+    then_branch: Ringo::Stmt
+    else_branch: Ringo::Stmt
+
 print:
   extends: Ringo::Stmt
   attributes:
