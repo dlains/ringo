@@ -93,5 +93,15 @@ RSpec.describe Ringo::Interpreter::LoxInterpreter do
       statements = make_statements("var a = 10;if (a < 10) print a; else print \"Not Less\";")
       expect{subject.interpret(statements)}.to output("Not Less\n").to_stdout
     end
+
+    it 'can handle a logical or statement' do
+      statements = make_statements('print "hi" or 2;print nil or "yes";')
+      expect{subject.interpret(statements)}.to output("hi\nyes\n").to_stdout
+    end
+
+    it 'can handle a logical and statement' do
+      statements = make_statements('print "hi" and "low";print "low" and nil;')
+      expect{subject.interpret(statements)}.to output("low\nnil\n").to_stdout
+    end
   end
 end

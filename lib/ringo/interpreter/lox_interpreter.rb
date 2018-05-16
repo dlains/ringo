@@ -130,6 +130,19 @@ module Ringo::Interpreter
       return evaluate(conditional.else_branch)
     end
 
+    # Handle the logical operators 'and', 'or'.
+    def visit_logical(logical)
+      left = evaluate(logical.left)
+
+      if logical.operator.type == :or
+        return left if is_truthy?(left)
+      else
+        return left if !is_truthy?(left)
+      end
+
+      return evaluate(logical.right)
+    end
+
     # Handle unary expressions.
     def visit_unary(unary)
       right = evaluate(unary.right)

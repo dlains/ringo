@@ -20,7 +20,9 @@ module Ringo::Parser
   # expression           -> comma
   # comma                -> assignment (',' assignment)* ;
   # assignment           -> identifier '=' assignment | comparison ;
-  # conditional          -> equality ('?' expression ':' conditional)? ;
+  # conditional          -> logicOr ('?' expression ':' conditional)? ;
+  # logicOr              -> logicAnd ( 'or' logicAnd )* ;
+  # logicAnd             -> equality ( 'and' equality )* ;
   # equality             -> comparison ( ( "!=" | "==" ) comparison )* ;
   # comparison           -> addition ( ( ">" | ">=" | "<" | "<=" ) addition )* ;
   # addition             -> multiplication ( ( "-" | "+" ) multiplication )* ;
@@ -234,13 +236,39 @@ module Ringo::Parser
 
     # Handle the ternary operator 'expr ? expr : expr'.
     def conditional
-      expr = equality
+      expr = logical_or
 
       if match?(:question)
         then_branch = expression
         consume(:colon, "Expect ':' after then branch of conditional expression.")
         else_branch = conditional
         expr = Ringo::Conditional.new(expr, then_branch, else_branch)
+      end
+
+      expr
+    end
+
+    # Handle the logical or operator.
+    def logical_or
+      expr = logical_and
+
+      while match?(:or)
+        operator = previous
+	right = logical_and
+	expr = Ringo::Logical.new(expr, operator, right)
+      end
+
+      expr
+    end
+
+    # Handle the logical and operator.
+    def logical_and
+      expr = equality
+
+      while match?(:and)
+        operator = previous
+	right = equality
+	expr = Ringo::Logical.new(expr, operator, right)
       end
 
       expr

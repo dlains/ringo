@@ -56,3 +56,6 @@ build-iPhoneSimulator/
 .byebug_history
 
 .DS_Store
+
+# tmux logs
+tmux-*.log

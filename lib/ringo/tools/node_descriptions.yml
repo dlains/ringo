@@ -31,6 +31,13 @@ literal:
   attributes:
     value: Object
 
+logical:
+  extends: Ringo::Expr
+  attributes:
+    left: Ringo::Expr
+    operator: Ringo::Token
+    right: Ringo::Expr
+
 unary:
   extends: Ringo::Expr
   attributes:
