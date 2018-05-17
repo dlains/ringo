@@ -12,10 +12,12 @@ module Ringo::Parser
   # statement            -> exprStmt
   #                       | ifStmt
   #                       | printStmt
+  #                       | whileStmt
   #                       | block ;
   # exprStmt             -> expression ';' ;
   # ifStmt               -> 'if' '(' expression ')' statement ( 'else' statement )? ;
   # printStmt            -> 'print' expression ';' ;
+  # whileStmt            -> 'while' '(' expression ')' statement ;
   # block                -> '{' declaration* '}' ;
   # expression           -> comma
   # comma                -> assignment (',' assignment)* ;
@@ -156,6 +158,7 @@ module Ringo::Parser
     def statement
       return if_statement if match?(:if)
       return print_statement if match?(:print)
+      return while_statement if match?(:while)
       return Ringo::Block.new(block) if match?(:lbrace)
       return expression_statement
     end
@@ -179,6 +182,17 @@ module Ringo::Parser
       return Ringo::Print.new(value)
     end
 
+    # A while loop statement. Execute body while the condition is true.
+    def while_statement
+      consume(:lparen, "Expect '(' after while.")
+      condition = expression
+      consume(:rparen, "Expect ')' after while condition.")
+      body = statement
+
+      return Ringo::While.new(condition, body)
+    end
+
+    # A block of statements grouped by {} characters.
     def block
       statements = []
 
@@ -216,6 +230,7 @@ module Ringo::Parser
       expr
     end
 
+    # Handle assigning a new value to an existing variable.
     def assignment
       expr = conditional
 
@@ -254,8 +269,8 @@ module Ringo::Parser
 
       while match?(:or)
         operator = previous
-	right = logical_and
-	expr = Ringo::Logical.new(expr, operator, right)
+        right = logical_and
+        expr = Ringo::Logical.new(expr, operator, right)
       end
 
       expr
@@ -267,8 +282,8 @@ module Ringo::Parser
 
       while match?(:and)
         operator = previous
-	right = equality
-	expr = Ringo::Logical.new(expr, operator, right)
+        right = equality
+        expr = Ringo::Logical.new(expr, operator, right)
       end
 
       expr

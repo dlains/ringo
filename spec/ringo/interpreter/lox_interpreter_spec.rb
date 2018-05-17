@@ -103,5 +103,10 @@ RSpec.describe Ringo::Interpreter::LoxInterpreter do
       statements = make_statements('print "hi" and "low";print "low" and nil;')
       expect{subject.interpret(statements)}.to output("low\nnil\n").to_stdout
     end
+
+    it 'can handle a while loop' do
+      statements = make_statements('var i = 0;while(i < 5) { print i; i = i + 1; }')
+      expect{subject.interpret(statements)}.to output("0.0\n1.0\n2.0\n3.0\n4.0\n").to_stdout
+    end
   end
 end

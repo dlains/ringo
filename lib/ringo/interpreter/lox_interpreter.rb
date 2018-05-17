@@ -28,6 +28,15 @@ module Ringo::Interpreter
       return nil
     end
 
+    # Handle while loops.
+    def visit_while(statement)
+      while(is_truthy?(evaluate(statement.condition)))
+        execute(statement.body)
+      end
+
+      return nil
+    end
+
     # Handle expression statements.
     def visit_expression(statement)
       evaluate(statement.expression)

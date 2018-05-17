@@ -75,6 +75,12 @@ var:
     name: Ringo::Token
     initializer: Ringo::Expr
 
+while:
+  extends: Ringo::Stmt
+  attributes:
+    condition: Ringo::Expr
+    body: Ringo::Stmt
+
 block:
   extends: Ringo::Stmt
   attributes:
