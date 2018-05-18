@@ -10,11 +10,13 @@ module Ringo::Parser
   # declaration          -> varDecl | statement ;
   # varDecl              -> 'var' IDENTIFIER ( '=' expression )? ';' ;
   # statement            -> exprStmt
+  #                       | forStmt
   #                       | ifStmt
   #                       | printStmt
   #                       | whileStmt
   #                       | block ;
   # exprStmt             -> expression ';' ;
+  # forStmt              -> 'for' '(' ( varDecl | exprStmt | ';' ) expression? ';' expression? ';' ')' statement ;
   # ifStmt               -> 'if' '(' expression ')' statement ( 'else' statement )? ;
   # printStmt            -> 'print' expression ';' ;
   # whileStmt            -> 'while' '(' expression ')' statement ;
@@ -156,11 +158,55 @@ module Ringo::Parser
 
     # Fall through to statement if the declaraction is not a variable declaration.
     def statement
+      return for_statement if match?(:for)
       return if_statement if match?(:if)
       return print_statement if match?(:print)
       return while_statement if match?(:while)
       return Ringo::Block.new(block) if match?(:lbrace)
       return expression_statement
+    end
+
+    # A traditional 'for' looping statement like the one in C.
+    def for_statement
+      consume(:lparen, "Expect '(' after 'for'.")
+      
+      initializer = nil
+      if match?(:semicolon)
+        initializer = nil
+      elsif match?(:var)
+        initializer = var_declaration
+      else
+        initializer = expression_statement
+      end
+
+      condition = nil
+      if !check?(:semicolon)
+        condition = expression
+      end
+      consume(:semicolon, "Expect ';' after loop condition.")
+
+      increment = nil
+      if !check?(:rparen)
+        increment = expression
+      end
+      consume(:rparen, "Expect ')' after for clause.")
+
+      body = statement
+
+      if !increment.nil?
+        body = Ringo::Block.new([body, Ringo::Expression.new(increment)])
+      end
+
+      if condition.nil?
+        condition = Ringo::Literal.new(true)
+      end
+      body = Ringo::While.new(condition, body)
+
+      if !initializer.nil?
+        body = Ringo::Block.new([initializer, body])
+      end
+
+      return body
     end
 
     # A conditional if / else statement.

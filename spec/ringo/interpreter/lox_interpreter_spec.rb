@@ -108,5 +108,10 @@ RSpec.describe Ringo::Interpreter::LoxInterpreter do
       statements = make_statements('var i = 0;while(i < 5) { print i; i = i + 1; }')
       expect{subject.interpret(statements)}.to output("0.0\n1.0\n2.0\n3.0\n4.0\n").to_stdout
     end
+
+    it 'can process a for loop' do
+      statements = make_statements('for(var i = 0;i < 5; i = i + 1) { print i; }')
+      expect{subject.interpret(statements)}.to output("0.0\n1.0\n2.0\n3.0\n4.0\n").to_stdout
+    end
   end
 end
