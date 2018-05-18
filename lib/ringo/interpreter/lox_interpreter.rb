@@ -28,9 +28,29 @@ module Ringo::Interpreter
       return nil
     end
 
+    # Handle while loops.
+    def visit_while(statement)
+      while(is_truthy?(evaluate(statement.condition)))
+        execute(statement.body)
+      end
+
+      return nil
+    end
+
     # Handle expression statements.
     def visit_expression(statement)
       evaluate(statement.expression)
+      return nil
+    end
+
+    # Handle a conditional if / else statement.
+    def visit_if(statement)
+      if is_truthy?(evaluate(statement.condition))
+        execute(statement.then_branch)
+      elsif !statement.else_branch.nil?
+        execute(statement.else_branch)
+      end
+
       return nil
     end
 
@@ -117,6 +137,19 @@ module Ringo::Interpreter
 
       return evaluate(conditional.then_branch) if is_truthy?(expr)
       return evaluate(conditional.else_branch)
+    end
+
+    # Handle the logical operators 'and', 'or'.
+    def visit_logical(logical)
+      left = evaluate(logical.left)
+
+      if logical.operator.type == :or
+        return left if is_truthy?(left)
+      else
+        return left if !is_truthy?(left)
+      end
+
+      return evaluate(logical.right)
     end
 
     # Handle unary expressions.

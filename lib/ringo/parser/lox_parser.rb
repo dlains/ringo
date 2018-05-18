@@ -10,15 +10,23 @@ module Ringo::Parser
   # declaration          -> varDecl | statement ;
   # varDecl              -> 'var' IDENTIFIER ( '=' expression )? ';' ;
   # statement            -> exprStmt
+  #                       | forStmt
+  #                       | ifStmt
   #                       | printStmt
+  #                       | whileStmt
   #                       | block ;
   # exprStmt             -> expression ';' ;
+  # forStmt              -> 'for' '(' ( varDecl | exprStmt | ';' ) expression? ';' expression? ';' ')' statement ;
+  # ifStmt               -> 'if' '(' expression ')' statement ( 'else' statement )? ;
   # printStmt            -> 'print' expression ';' ;
+  # whileStmt            -> 'while' '(' expression ')' statement ;
   # block                -> '{' declaration* '}' ;
   # expression           -> comma
   # comma                -> assignment (',' assignment)* ;
   # assignment           -> identifier '=' assignment | comparison ;
-  # conditional          -> equality ('?' expression ':' conditional)? ;
+  # conditional          -> logicOr ('?' expression ':' conditional)? ;
+  # logicOr              -> logicAnd ( 'or' logicAnd )* ;
+  # logicAnd             -> equality ( 'and' equality )* ;
   # equality             -> comparison ( ( "!=" | "==" ) comparison )* ;
   # comparison           -> addition ( ( ">" | ">=" | "<" | "<=" ) addition )* ;
   # addition             -> multiplication ( ( "-" | "+" ) multiplication )* ;
@@ -150,9 +158,67 @@ module Ringo::Parser
 
     # Fall through to statement if the declaraction is not a variable declaration.
     def statement
+      return for_statement if match?(:for)
+      return if_statement if match?(:if)
       return print_statement if match?(:print)
+      return while_statement if match?(:while)
       return Ringo::Block.new(block) if match?(:lbrace)
       return expression_statement
+    end
+
+    # A traditional 'for' looping statement like the one in C.
+    def for_statement
+      consume(:lparen, "Expect '(' after 'for'.")
+      
+      initializer = nil
+      if match?(:semicolon)
+        initializer = nil
+      elsif match?(:var)
+        initializer = var_declaration
+      else
+        initializer = expression_statement
+      end
+
+      condition = nil
+      if !check?(:semicolon)
+        condition = expression
+      end
+      consume(:semicolon, "Expect ';' after loop condition.")
+
+      increment = nil
+      if !check?(:rparen)
+        increment = expression
+      end
+      consume(:rparen, "Expect ')' after for clause.")
+
+      body = statement
+
+      if !increment.nil?
+        body = Ringo::Block.new([body, Ringo::Expression.new(increment)])
+      end
+
+      if condition.nil?
+        condition = Ringo::Literal.new(true)
+      end
+      body = Ringo::While.new(condition, body)
+
+      if !initializer.nil?
+        body = Ringo::Block.new([initializer, body])
+      end
+
+      return body
+    end
+
+    # A conditional if / else statement.
+    def if_statement
+      consume(:lparen, "Expect '(' after 'if'.")
+      condition = expression
+      consume(:rparen, "Expect ')' after if condition.")
+
+      then_branch = statement
+      else_branch = match?(:else) ? statement : nil
+
+      return Ringo::If.new(condition, then_branch, else_branch)
     end
 
     # A kind of statement that prints the result of the given expression.
@@ -162,6 +228,17 @@ module Ringo::Parser
       return Ringo::Print.new(value)
     end
 
+    # A while loop statement. Execute body while the condition is true.
+    def while_statement
+      consume(:lparen, "Expect '(' after while.")
+      condition = expression
+      consume(:rparen, "Expect ')' after while condition.")
+      body = statement
+
+      return Ringo::While.new(condition, body)
+    end
+
+    # A block of statements grouped by {} characters.
     def block
       statements = []
 
@@ -199,6 +276,7 @@ module Ringo::Parser
       expr
     end
 
+    # Handle assigning a new value to an existing variable.
     def assignment
       expr = conditional
 
@@ -219,13 +297,39 @@ module Ringo::Parser
 
     # Handle the ternary operator 'expr ? expr : expr'.
     def conditional
-      expr = equality
+      expr = logical_or
 
       if match?(:question)
         then_branch = expression
         consume(:colon, "Expect ':' after then branch of conditional expression.")
         else_branch = conditional
         expr = Ringo::Conditional.new(expr, then_branch, else_branch)
+      end
+
+      expr
+    end
+
+    # Handle the logical or operator.
+    def logical_or
+      expr = logical_and
+
+      while match?(:or)
+        operator = previous
+        right = logical_and
+        expr = Ringo::Logical.new(expr, operator, right)
+      end
+
+      expr
+    end
+
+    # Handle the logical and operator.
+    def logical_and
+      expr = equality
+
+      while match?(:and)
+        operator = previous
+        right = equality
+        expr = Ringo::Logical.new(expr, operator, right)
       end
 
       expr

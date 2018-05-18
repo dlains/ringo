@@ -83,5 +83,35 @@ RSpec.describe Ringo::Interpreter::LoxInterpreter do
       statements = make_statements("var a = 1.0;\nvar b = 2.0;\n{\nvar a = 10.0;\nprint a;\nprint b;\n}print a;\nprint b;\n")
       expect{subject.interpret(statements)}.to output("10.0\n2.0\n1.0\n2.0\n").to_stdout
     end
+
+    it 'can handle a true conditional statement' do
+      statements = make_statements("var a = 10;if (a < 20) print a;")
+      expect{subject.interpret(statements)}.to output("10.0\n").to_stdout
+    end
+
+    it 'can handle a false conditional statement' do
+      statements = make_statements("var a = 10;if (a < 10) print a; else print \"Not Less\";")
+      expect{subject.interpret(statements)}.to output("Not Less\n").to_stdout
+    end
+
+    it 'can handle a logical or statement' do
+      statements = make_statements('print "hi" or 2;print nil or "yes";')
+      expect{subject.interpret(statements)}.to output("hi\nyes\n").to_stdout
+    end
+
+    it 'can handle a logical and statement' do
+      statements = make_statements('print "hi" and "low";print "low" and nil;')
+      expect{subject.interpret(statements)}.to output("low\nnil\n").to_stdout
+    end
+
+    it 'can handle a while loop' do
+      statements = make_statements('var i = 0;while(i < 5) { print i; i = i + 1; }')
+      expect{subject.interpret(statements)}.to output("0.0\n1.0\n2.0\n3.0\n4.0\n").to_stdout
+    end
+
+    it 'can process a for loop' do
+      statements = make_statements('for(var i = 0;i < 5; i = i + 1) { print i; }')
+      expect{subject.interpret(statements)}.to output("0.0\n1.0\n2.0\n3.0\n4.0\n").to_stdout
+    end
   end
 end

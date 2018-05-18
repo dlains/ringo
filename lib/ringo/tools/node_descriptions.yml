@@ -31,6 +31,13 @@ literal:
   attributes:
     value: Object
 
+logical:
+  extends: Ringo::Expr
+  attributes:
+    left: Ringo::Expr
+    operator: Ringo::Token
+    right: Ringo::Expr
+
 unary:
   extends: Ringo::Expr
   attributes:
@@ -50,6 +57,13 @@ expression:
   attributes:
     expression: Ringo::Expr
 
+if:
+  extends: Ringo::Stmt
+  attributes:
+    condition: Ringo::Expr
+    then_branch: Ringo::Stmt
+    else_branch: Ringo::Stmt
+
 print:
   extends: Ringo::Stmt
   attributes:
@@ -60,6 +74,12 @@ var:
   attributes:
     name: Ringo::Token
     initializer: Ringo::Expr
+
+while:
+  extends: Ringo::Stmt
+  attributes:
+    condition: Ringo::Expr
+    body: Ringo::Stmt
 
 block:
   extends: Ringo::Stmt
