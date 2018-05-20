@@ -21,6 +21,7 @@ module Ringo::Parser
   # printStmt            -> 'print' expression ';' ;
   # whileStmt            -> 'while' '(' expression ')' statement ;
   # block                -> '{' declaration* '}' ;
+  # arguments            -> expression ( ',' expression )* ;
   # expression           -> comma
   # comma                -> assignment (',' assignment)* ;
   # assignment           -> identifier '=' assignment | comparison ;
@@ -32,7 +33,8 @@ module Ringo::Parser
   # addition             -> multiplication ( ( "-" | "+" ) multiplication )* ;
   # multiplication       -> unary ( ( "/" | "*" ) unary )* ;
   # unary                -> ( "!" | "-" ) unary
-  #                       | primary ;
+  #                       | call ;
+  # call                 -> primary ( '(' arguments? ')' )* ;
   # primary              -> NUMBER | STRING | 'false' | 'true' | 'nil'
   #                       | '(' expression ')'
   #                       | IDENTIFIER
@@ -395,7 +397,40 @@ module Ringo::Parser
         return Ringo::Unary.new(operator, right)
       end
 
-      return primary
+      return call
+    end
+
+    # Handle parsing function calls.
+    def call
+      expr = primary
+
+      while(true)
+        if match?(:lparen)
+          expr = finish_call(expr)
+        else
+          break;
+        end
+      end
+
+      return expr
+    end
+
+    # Handle function arguments.
+    def finish_call(callee)
+      arguments = []
+      if !check?(:rparen)
+        loop do
+          if arguments.size >= 8
+            error(peek, 'Cannot have more than eight arguments.')
+          end
+          arguments << expression
+          break unless match?(:comma)
+        end
+      end
+
+      paren = consume(:rparen, "Expect ')' after arguments.")
+
+      Ringo::Call.new(callee, paren, arguments)
     end
 
     # Handle string, number, grouping and other literals: +true+, +false+, +nil+

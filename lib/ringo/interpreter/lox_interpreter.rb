@@ -120,6 +120,27 @@ module Ringo::Interpreter
       return nil
     end
 
+    # Handle function call expressions.
+    def visit_call(call)
+      callee = evaluate(call.callee)
+
+      arguments = []
+      call.arguments.each do |arg|
+        arguments << evaluate(arg)
+      end
+
+      if !callee.respond_to?(:call)
+        raise Ringo::Errors.new(call.paren, 'Can only call functions and classes.')
+      end
+
+      function = callee
+      if arguments.length != function.arity
+        raise Ringo::Errors::RuntimeError.new(call.paren, "Expected #{function.arity} arguments but got #{arguments.length}.")
+      end
+
+      function.call(self, arguments)
+    end
+
     # Handle assignment expressions. This re-assigns a new value to an existing
     # variable. If the variable name does not exist already a runtime error is raised.
     def visit_assign(assignment)

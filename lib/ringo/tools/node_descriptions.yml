@@ -14,6 +14,13 @@ binary:
     operator: Ringo::Token
     right: Ringo::Expr
 
+call:
+  extends: Ringo::Expr
+  attributes:
+    callee: Ringo::Expr
+    paren: Ringo::Token
+    arguments: Ringo::Expr
+
 conditional:
   extends: Ringo::Expr
   attributes:
