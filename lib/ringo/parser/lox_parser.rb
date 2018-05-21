@@ -155,6 +155,7 @@ module Ringo::Parser
     # Create a new function.
     def function_declaration(kind)
       name = consume(:identifier, "Expect #{kind} name.")
+      consume(:lparen, "Expect '(' after #{kind} name.")
       parameters = []
       if !check?(:rparen)
         loop do
@@ -197,7 +198,7 @@ module Ringo::Parser
     # A traditional 'for' looping statement like the one in C.
     def for_statement
       consume(:lparen, "Expect '(' after 'for'.")
-      
+
       initializer = nil
       if match?(:semicolon)
         initializer = nil
@@ -449,7 +450,7 @@ module Ringo::Parser
           if arguments.size >= 8
             error(peek, 'Cannot have more than eight arguments.')
           end
-          arguments << expression
+          arguments << assignment
           break unless match?(:comma)
         end
       end

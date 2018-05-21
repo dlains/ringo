@@ -4,6 +4,8 @@ module Ringo::Interpreter
   # visitor pattern to recursively walk through the AST nodes provided by the
   # LoxParser and performs the actions specified in the source code.
   class LoxInterpreter
+    attr_reader :globals
+
     def initialize
       @environment = Ringo::Environment.new
       @globals = @environment
@@ -21,6 +23,14 @@ module Ringo::Interpreter
       end
     rescue Ringo::Errors::RuntimeError => error
       Ringo.runtime_error(error)
+    end
+
+    # Handle function declarations. Create a LoxFunction and store it
+    # in the environment.
+    def visit_function(statement)
+      function = Ringo::LoxFunction.new(statement)
+      @environment.define(statement.name, function)
+      return nil
     end
 
     # Handle var declarations.
@@ -203,15 +213,6 @@ module Ringo::Interpreter
       evaluate(grouping.expression)
     end
 
-    private
-
-    # Execute is the entry point for visiting statements. It calls +accept+ on
-    # the given statement which then recursively calls +accept+ on the leaf nodes
-    # in the AST.
-    def execute(statement)
-      statement.accept(self)
-    end
-
     # Execute a set of statements. This also provides the new local environment
     # for the block. The block local environment shadows the current environment
     # for the duration of the statements.
@@ -227,6 +228,15 @@ module Ringo::Interpreter
       ensure
         @environment = previous
       end
+    end
+
+   private
+
+    # Execute is the entry point for visiting statements. It calls +accept+ on
+    # the given statement which then recursively calls +accept+ on the leaf nodes
+    # in the AST.
+    def execute(statement)
+      statement.accept(self)
     end
 
     # Evaluate is the entry point for the visitor pattern. It calls +accept+ on
