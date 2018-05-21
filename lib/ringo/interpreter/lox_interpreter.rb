@@ -6,6 +6,10 @@ module Ringo::Interpreter
   class LoxInterpreter
     def initialize
       @environment = Ringo::Environment.new
+      @globals = @environment
+
+      # Create the clock native function and put it in globals.
+      @globals.define(Ringo::Token.new(:identifier, 'clock', nil, 1), Ringo::Clock.new)
     end
 
     # Kick off the interpreter for the given statements. If a runtime error occurs

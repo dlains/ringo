@@ -4,6 +4,9 @@ require 'ringo/version'
 require 'ringo/environment'
 require 'ringo/util'
 
+require 'ringo/lox_callable'
+require 'ringo/clock'
+
 require 'ringo/scanner/lox_scanner'
 require 'ringo/parser/lox_parser'
 require 'ringo/interpreter/lox_interpreter'
