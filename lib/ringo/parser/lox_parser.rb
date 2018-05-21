@@ -7,7 +7,12 @@ module Ringo::Parser
   #
   # The current grammar is as follows:
   # program              -> declaration* EOF ;
-  # declaration          -> varDecl | statement ;
+  # declaration          -> funDecl
+  #                       | varDecl
+  #                       | statement ;
+  # funDecl              -> 'fun' function ;
+  # function             -> IDENTIFIER '(' parameters? ')' block ;
+  # parameters           -> IDENTIFIER ( ',' IDENTIFIER )* ;
   # varDecl              -> 'var' IDENTIFIER ( '=' expression )? ';' ;
   # statement            -> exprStmt
   #                       | forStmt
@@ -139,11 +144,32 @@ module Ringo::Parser
 
     # Top level Lox grammar rule. A full program is a list of declarations.
     def declaration
+      return function_declaration('function') if match?(:fun)
       return var_declaration if match?(:var)
       return statement
     rescue Ringo::Errors::ParseError => error
       synchronize
       return nil
+    end
+
+    # Create a new function.
+    def function_declaration(kind)
+      name = consume(:identifier, "Expect #{kind} name.")
+      parameters = []
+      if !check?(:rparen)
+        loop do
+          if parameters.length >= 8
+            error(peek, 'Cannot have more than 8 parameters')
+          end
+          parameters << consume(:identifier, 'Expect parameter name')
+          break unless match?(:comma)
+        end
+      end
+      consume(:rparen, "Expect ')' after parameters.")
+
+      consume(:lbrace, "Expect '{' before #{kind} body")
+      body = block
+      return Ringo::Function.new(name, parameters, body)
     end
 
     # Create a variable declaration of the form 'var x;', or 'var x = 2;'

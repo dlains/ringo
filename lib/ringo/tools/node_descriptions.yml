@@ -64,6 +64,13 @@ expression:
   attributes:
     expression: Ringo::Expr
 
+function:
+  extends: Ringo::Stmt
+  attributes:
+    name: Ringo::Token
+    parameters: Ringo::Token
+    body: Ringo::Stmt
+
 if:
   extends: Ringo::Stmt
   attributes:
