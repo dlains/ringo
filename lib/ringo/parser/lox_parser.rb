@@ -18,15 +18,16 @@ module Ringo::Parser
   #                       | forStmt
   #                       | ifStmt
   #                       | printStmt
+  #                       | returnStmt
   #                       | whileStmt
   #                       | block ;
   # exprStmt             -> expression ';' ;
   # forStmt              -> 'for' '(' ( varDecl | exprStmt | ';' ) expression? ';' expression? ';' ')' statement ;
   # ifStmt               -> 'if' '(' expression ')' statement ( 'else' statement )? ;
   # printStmt            -> 'print' expression ';' ;
+  # returnStmt           -> 'return' expression? ';' ;
   # whileStmt            -> 'while' '(' expression ')' statement ;
   # block                -> '{' declaration* '}' ;
-  # arguments            -> expression ( ',' expression )* ;
   # expression           -> comma
   # comma                -> assignment (',' assignment)* ;
   # assignment           -> identifier '=' assignment | comparison ;
@@ -40,6 +41,7 @@ module Ringo::Parser
   # unary                -> ( "!" | "-" ) unary
   #                       | call ;
   # call                 -> primary ( '(' arguments? ')' )* ;
+  # arguments            -> expression ( ',' expression )* ;
   # primary              -> NUMBER | STRING | 'false' | 'true' | 'nil'
   #                       | '(' expression ')'
   #                       | IDENTIFIER
@@ -190,6 +192,7 @@ module Ringo::Parser
       return for_statement if match?(:for)
       return if_statement if match?(:if)
       return print_statement if match?(:print)
+      return return_statement if match?(:return)
       return while_statement if match?(:while)
       return Ringo::Block.new(block) if match?(:lbrace)
       return expression_statement
@@ -255,6 +258,16 @@ module Ringo::Parser
       value = expression
       consume(:semicolon, "Expect ';' after value.")
       return Ringo::Print.new(value)
+    end
+
+    # Return a value from a function call. If no value is supplied, or the return is left out
+    # return nil.
+    def return_statement
+      keyword = previous
+      value = check?(:semicolon) ? nil : expression
+
+      consume(:semicolon, "Expect ';' after return value.")
+      Ringo::Return.new(keyword, value)
     end
 
     # A while loop statement. Execute body while the condition is true.

@@ -16,6 +16,7 @@ require 'ringo/tools/ast_printer'
 
 require 'ringo/errors/parse_error'
 require 'ringo/errors/runtime_error'
+require 'ringo/errors/return'
 
 module Ringo
   # Generate the AST node classes defined in node_descriptions.yml.

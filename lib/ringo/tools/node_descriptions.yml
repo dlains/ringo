@@ -83,6 +83,12 @@ print:
   attributes:
     expression: Ringo::Expr
 
+return:
+  extends: Ringo::Stmt
+  attributes:
+    keyword: Ringo::Token
+    value: Ringo::Expr
+
 var:
   extends: Ringo::Stmt
   attributes:

@@ -118,5 +118,10 @@ RSpec.describe Ringo::Interpreter::LoxInterpreter do
       statements = make_statements('fun hi(first, last) { print "Hi, " + first + " " + last + "!"; } hi("Dear", "Reader");')
       expect{subject.interpret(statements)}.to output("Hi, Dear Reader!\n").to_stdout
     end
+
+    it 'can process a function with a return statement', force: true do
+      statements = make_statements('fun addtwo(num) { return num + 2; } print addtwo(4);')
+      expect{subject.interpret(statements)}.to output("6.0\n").to_stdout
+    end
   end
 end

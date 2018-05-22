@@ -75,6 +75,13 @@ module Ringo::Interpreter
       return nil
     end
 
+    # Handle a return statement within function calls. This rewinds all of the
+    # visit_* interpreter calls back to visit_call.
+    def visit_return(statement)
+      value = statement.value.nil? ? nil : evaluate(statement.value)
+      raise Ringo::Errors::Return.new(value)
+    end
+
     # Handle a block of statements. A block creates a new scope, so a new
     # environment is created and the current environment is set as the enclosing
     # scope.

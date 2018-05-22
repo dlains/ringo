@@ -14,7 +14,12 @@ module Ringo
         environment.define(@declaration.parameters.at(i), arguments.at(i))
       end
 
-      interpreter.execute_block(@declaration.body, environment)
+      begin
+        interpreter.execute_block(@declaration.body, environment)
+      rescue Ringo::Errors::Return => e
+        return e.value
+      end
+
       return nil
     end
 
