@@ -1,7 +1,8 @@
 module Ringo
   class LoxFunction < LoxCallable
-    def initialize(declaration)
+    def initialize(declaration, closure)
       @declaration = declaration
+      @closure = closure
     end
 
     def arity
@@ -9,7 +10,7 @@ module Ringo
     end
 
     def call(interpreter, arguments)
-      environment = Ringo::Environment.new(interpreter.globals)
+      environment = Ringo::Environment.new(@closure)
       @declaration.parameters.each_index do |i|
         environment.define(@declaration.parameters.at(i), arguments.at(i))
       end

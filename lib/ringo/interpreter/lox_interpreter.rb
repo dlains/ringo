@@ -28,7 +28,7 @@ module Ringo::Interpreter
     # Handle function declarations. Create a LoxFunction and store it
     # in the environment.
     def visit_function(statement)
-      function = Ringo::LoxFunction.new(statement)
+      function = Ringo::LoxFunction.new(statement, @environment)
       @environment.define(statement.name, function)
       return nil
     end
