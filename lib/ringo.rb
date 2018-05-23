@@ -4,6 +4,10 @@ require 'ringo/version'
 require 'ringo/environment'
 require 'ringo/util'
 
+require 'ringo/lox_callable'
+require 'ringo/lox_function'
+require 'ringo/clock'
+
 require 'ringo/scanner/lox_scanner'
 require 'ringo/parser/lox_parser'
 require 'ringo/interpreter/lox_interpreter'
@@ -12,6 +16,7 @@ require 'ringo/tools/ast_printer'
 
 require 'ringo/errors/parse_error'
 require 'ringo/errors/runtime_error'
+require 'ringo/errors/return'
 
 module Ringo
   # Generate the AST node classes defined in node_descriptions.yml.

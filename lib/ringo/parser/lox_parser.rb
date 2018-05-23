@@ -7,18 +7,25 @@ module Ringo::Parser
   #
   # The current grammar is as follows:
   # program              -> declaration* EOF ;
-  # declaration          -> varDecl | statement ;
+  # declaration          -> funDecl
+  #                       | varDecl
+  #                       | statement ;
+  # funDecl              -> 'fun' function ;
+  # function             -> IDENTIFIER '(' parameters? ')' block ;
+  # parameters           -> IDENTIFIER ( ',' IDENTIFIER )* ;
   # varDecl              -> 'var' IDENTIFIER ( '=' expression )? ';' ;
   # statement            -> exprStmt
   #                       | forStmt
   #                       | ifStmt
   #                       | printStmt
+  #                       | returnStmt
   #                       | whileStmt
   #                       | block ;
   # exprStmt             -> expression ';' ;
   # forStmt              -> 'for' '(' ( varDecl | exprStmt | ';' ) expression? ';' expression? ';' ')' statement ;
   # ifStmt               -> 'if' '(' expression ')' statement ( 'else' statement )? ;
   # printStmt            -> 'print' expression ';' ;
+  # returnStmt           -> 'return' expression? ';' ;
   # whileStmt            -> 'while' '(' expression ')' statement ;
   # block                -> '{' declaration* '}' ;
   # expression           -> comma
@@ -32,7 +39,9 @@ module Ringo::Parser
   # addition             -> multiplication ( ( "-" | "+" ) multiplication )* ;
   # multiplication       -> unary ( ( "/" | "*" ) unary )* ;
   # unary                -> ( "!" | "-" ) unary
-  #                       | primary ;
+  #                       | call ;
+  # call                 -> primary ( '(' arguments? ')' )* ;
+  # arguments            -> expression ( ',' expression )* ;
   # primary              -> NUMBER | STRING | 'false' | 'true' | 'nil'
   #                       | '(' expression ')'
   #                       | IDENTIFIER
@@ -137,11 +146,33 @@ module Ringo::Parser
 
     # Top level Lox grammar rule. A full program is a list of declarations.
     def declaration
+      return function_declaration('function') if match?(:fun)
       return var_declaration if match?(:var)
       return statement
     rescue Ringo::Errors::ParseError => error
       synchronize
       return nil
+    end
+
+    # Create a new function.
+    def function_declaration(kind)
+      name = consume(:identifier, "Expect #{kind} name.")
+      consume(:lparen, "Expect '(' after #{kind} name.")
+      parameters = []
+      if !check?(:rparen)
+        loop do
+          if parameters.length >= 8
+            error(peek, 'Cannot have more than 8 parameters')
+          end
+          parameters << consume(:identifier, 'Expect parameter name')
+          break unless match?(:comma)
+        end
+      end
+      consume(:rparen, "Expect ')' after parameters.")
+
+      consume(:lbrace, "Expect '{' before #{kind} body")
+      body = block
+      return Ringo::Function.new(name, parameters, body)
     end
 
     # Create a variable declaration of the form 'var x;', or 'var x = 2;'
@@ -161,6 +192,7 @@ module Ringo::Parser
       return for_statement if match?(:for)
       return if_statement if match?(:if)
       return print_statement if match?(:print)
+      return return_statement if match?(:return)
       return while_statement if match?(:while)
       return Ringo::Block.new(block) if match?(:lbrace)
       return expression_statement
@@ -169,7 +201,7 @@ module Ringo::Parser
     # A traditional 'for' looping statement like the one in C.
     def for_statement
       consume(:lparen, "Expect '(' after 'for'.")
-      
+
       initializer = nil
       if match?(:semicolon)
         initializer = nil
@@ -226,6 +258,16 @@ module Ringo::Parser
       value = expression
       consume(:semicolon, "Expect ';' after value.")
       return Ringo::Print.new(value)
+    end
+
+    # Return a value from a function call. If no value is supplied, or the return is left out
+    # return nil.
+    def return_statement
+      keyword = previous
+      value = check?(:semicolon) ? nil : expression
+
+      consume(:semicolon, "Expect ';' after return value.")
+      Ringo::Return.new(keyword, value)
     end
 
     # A while loop statement. Execute body while the condition is true.
@@ -395,7 +437,40 @@ module Ringo::Parser
         return Ringo::Unary.new(operator, right)
       end
 
-      return primary
+      return call
+    end
+
+    # Handle parsing function calls.
+    def call
+      expr = primary
+
+      while(true)
+        if match?(:lparen)
+          expr = finish_call(expr)
+        else
+          break;
+        end
+      end
+
+      return expr
+    end
+
+    # Handle function arguments.
+    def finish_call(callee)
+      arguments = []
+      if !check?(:rparen)
+        loop do
+          if arguments.size >= 8
+            error(peek, 'Cannot have more than eight arguments.')
+          end
+          arguments << assignment
+          break unless match?(:comma)
+        end
+      end
+
+      paren = consume(:rparen, "Expect ')' after arguments.")
+
+      Ringo::Call.new(callee, paren, arguments)
     end
 
     # Handle string, number, grouping and other literals: +true+, +false+, +nil+

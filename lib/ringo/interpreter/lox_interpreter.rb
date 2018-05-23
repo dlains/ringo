@@ -4,8 +4,14 @@ module Ringo::Interpreter
   # visitor pattern to recursively walk through the AST nodes provided by the
   # LoxParser and performs the actions specified in the source code.
   class LoxInterpreter
+    attr_reader :globals
+
     def initialize
       @environment = Ringo::Environment.new
+      @globals = @environment
+
+      # Create the clock native function and put it in globals.
+      @globals.define(Ringo::Token.new(:identifier, 'clock', nil, 1), Ringo::Clock.new)
     end
 
     # Kick off the interpreter for the given statements. If a runtime error occurs
@@ -17,6 +23,14 @@ module Ringo::Interpreter
       end
     rescue Ringo::Errors::RuntimeError => error
       Ringo.runtime_error(error)
+    end
+
+    # Handle function declarations. Create a LoxFunction and store it
+    # in the environment.
+    def visit_function(statement)
+      function = Ringo::LoxFunction.new(statement, @environment)
+      @environment.define(statement.name, function)
+      return nil
     end
 
     # Handle var declarations.
@@ -59,6 +73,13 @@ module Ringo::Interpreter
       value = evaluate(statement.expression)
       puts stringify(value)
       return nil
+    end
+
+    # Handle a return statement within function calls. This rewinds all of the
+    # visit_* interpreter calls back to visit_call.
+    def visit_return(statement)
+      value = statement.value.nil? ? nil : evaluate(statement.value)
+      raise Ringo::Errors::Return.new(value)
     end
 
     # Handle a block of statements. A block creates a new scope, so a new
@@ -120,6 +141,27 @@ module Ringo::Interpreter
       return nil
     end
 
+    # Handle function call expressions.
+    def visit_call(call)
+      callee = evaluate(call.callee)
+
+      arguments = []
+      call.arguments.each do |arg|
+        arguments << evaluate(arg)
+      end
+
+      if !callee.respond_to?(:call)
+        raise Ringo::Errors.new(call.paren, 'Can only call functions and classes.')
+      end
+
+      function = callee
+      if arguments.length != function.arity
+        raise Ringo::Errors::RuntimeError.new(call.paren, "Expected #{function.arity} arguments but got #{arguments.length}.")
+      end
+
+      function.call(self, arguments)
+    end
+
     # Handle assignment expressions. This re-assigns a new value to an existing
     # variable. If the variable name does not exist already a runtime error is raised.
     def visit_assign(assignment)
@@ -178,15 +220,6 @@ module Ringo::Interpreter
       evaluate(grouping.expression)
     end
 
-    private
-
-    # Execute is the entry point for visiting statements. It calls +accept+ on
-    # the given statement which then recursively calls +accept+ on the leaf nodes
-    # in the AST.
-    def execute(statement)
-      statement.accept(self)
-    end
-
     # Execute a set of statements. This also provides the new local environment
     # for the block. The block local environment shadows the current environment
     # for the duration of the statements.
@@ -202,6 +235,15 @@ module Ringo::Interpreter
       ensure
         @environment = previous
       end
+    end
+
+   private
+
+    # Execute is the entry point for visiting statements. It calls +accept+ on
+    # the given statement which then recursively calls +accept+ on the leaf nodes
+    # in the AST.
+    def execute(statement)
+      statement.accept(self)
     end
 
     # Evaluate is the entry point for the visitor pattern. It calls +accept+ on
