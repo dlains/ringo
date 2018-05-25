@@ -34,6 +34,9 @@ module Ringo
       # Stop if there was an error.
       return if Ringo.had_error?
 
+      resolver = Ringo::Resolver::LoxResolver.new(interpreter)
+      resolver.resolve(statements)
+
       interpreter.interpret(statements)
     end
 

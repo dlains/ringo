@@ -1,5 +1,7 @@
 module Ringo
   class Environment
+    attr_reader :values, :enclosing
+
     def initialize(enclosing = nil)
       @values = Hash.new
       @enclosing = enclosing
@@ -28,7 +30,24 @@ module Ringo
       raise undefined_variable_error(name)
     end
 
+    def get_at(distance, token)
+      return ancestor(distance).values[token.lexeme]
+    end
+
+    def assign_at(distance, token, value)
+      ancestor(distance).values[token.lexeme] = value
+    end
+
     private
+
+    def ancestor(distance)
+      environment = self
+      distance.times do
+        environment = environment.enclosing
+      end
+
+      return environment
+    end
 
     def undefined_variable_error(name)
       Ringo::Errors::RuntimeError.new(name, "Undefined variable '#{name}'.")

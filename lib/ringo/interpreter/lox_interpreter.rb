@@ -4,11 +4,10 @@ module Ringo::Interpreter
   # visitor pattern to recursively walk through the AST nodes provided by the
   # LoxParser and performs the actions specified in the source code.
   class LoxInterpreter
-    attr_reader :globals
-
     def initialize
       @environment = Ringo::Environment.new
       @globals = @environment
+      @locals = {}
 
       # Create the clock native function and put it in globals.
       @globals.define(Ringo::Token.new(:identifier, 'clock', nil, 1), Ringo::Clock.new)
@@ -92,7 +91,15 @@ module Ringo::Interpreter
 
     # Handle variable expressions.
     def visit_variable(expression)
-      return @environment.get(expression.name.lexeme)
+      return lookup_variable(expression.name, expression)
+    end
+
+    # Look up the variable in the locals table to find the distance
+    # to the environment.
+    def lookup_variable(name, expression)
+      distance = @locals[expression]
+      return @environment.get_at(distance, name) unless distance.nil?
+      return @globals.get(name.lexeme)
     end
 
     # Handle binary expressions. The +plus+ case is overloaded to add either numbers
@@ -167,7 +174,9 @@ module Ringo::Interpreter
     def visit_assign(assignment)
       value = evaluate(assignment.value)
 
-      @environment.assign(assignment.name, value)
+      distance = @locals[assignment]
+      @environment.assign_at(distance, assignment.name, value) unless distance.nil?
+      @globals.assign(assignment.name, value)
       return value
     end
 
@@ -235,6 +244,11 @@ module Ringo::Interpreter
       ensure
         @environment = previous
       end
+    end
+
+    # Store the resolved environment depth for a given expression.
+    def resolve(expression, depth)
+      @locals[expression] = depth
     end
 
    private
