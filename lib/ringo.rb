@@ -11,6 +11,7 @@ require 'ringo/clock'
 require 'ringo/scanner/lox_scanner'
 require 'ringo/parser/lox_parser'
 require 'ringo/interpreter/lox_interpreter'
+require 'ringo/resolver/lox_resolver'
 require 'ringo/tools/node_generator'
 require 'ringo/tools/ast_printer'
 

@@ -32,6 +32,15 @@ module Ringo
       statements = parser.parse
 
       # Stop if there was an error.
+      # If there was an error reported during the parse step
+      # don't try to run the code.
+      return if Ringo.had_error?
+
+      resolver = Ringo::Resolver::LoxResolver.new(interpreter)
+      resolver.resolve(statements)
+
+      # If there was an error reported during the resolve step
+      # don't try to run the code.
       return if Ringo.had_error?
 
       interpreter.interpret(statements)

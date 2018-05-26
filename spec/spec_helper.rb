@@ -28,8 +28,11 @@ def make_ast(source)
   Ringo::Tools::AstPrinter.new.print(parser.parse.first)
 end
 
-def make_statements(source)
+def make_statements(source, interpreter)
   scanner = make_scanner(source)
   parser = Ringo::Parser::LoxParser.new(scanner.tokens)
-  return parser.parse
+  statements = parser.parse
+  resolver = Ringo::Resolver::LoxResolver.new(interpreter)
+  resolver.resolve(statements)
+  return statements
 end
