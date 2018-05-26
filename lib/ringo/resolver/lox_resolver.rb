@@ -1,8 +1,14 @@
 module Ringo::Resolver
   class LoxResolver
+    # Function type constants allow the code to detect return statements
+    # that are not within an actual function.
+    FUNCTION_TYPE_NONE = 1
+    FUNCTION_TYPE_FUNCTION = 2
+
     def initialize(interpreter)
       @interpreter = interpreter
       @scopes = []
+      @current_function_type = FUNCTION_TYPE_NONE
     end
 
     def resolve(statements)
@@ -46,7 +52,7 @@ module Ringo::Resolver
       declare(statement.name)
       define(statement.name)
 
-      resolve_function(statement)
+      resolve_function(statement, FUNCTION_TYPE_FUNCTION)
       return nil
     end
 
@@ -68,6 +74,9 @@ module Ringo::Resolver
     end
 
     def visit_return(statement)
+      if @current_function_type == FUNCTION_TYPE_NONE
+        Ringo.error(statement.keyword, "Can not return from top-level code.")
+      end
       resolve_stmt(statement.value) unless statement.value.nil?
       return nil
     end
@@ -130,7 +139,10 @@ module Ringo::Resolver
       expression.accept(self)
     end
 
-    def resolve_function(function)
+    def resolve_function(function, function_type)
+      enclosing_function_type = @current_function_type
+      @current_function_type = function_type
+
       begin_scope
       function.parameters.each do |param|
         declare(param)
@@ -138,6 +150,7 @@ module Ringo::Resolver
       end
       resolve(function.body)
       end_scope
+      @current_function_type = enclosing_function_type
     end
 
     def begin_scope
