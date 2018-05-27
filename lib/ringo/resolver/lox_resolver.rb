@@ -56,6 +56,12 @@ module Ringo::Resolver
       return nil
     end
 
+    def visit_class(statement)
+      declare(statement.name)
+      define(statement.name)
+      return nil
+    end
+
     def visit_expression(statement)
       resolve_stmt(statement.expression)
       return nil

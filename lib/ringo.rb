@@ -6,6 +6,7 @@ require 'ringo/util'
 
 require 'ringo/lox_callable'
 require 'ringo/lox_function'
+require 'ringo/lox_class'
 require 'ringo/clock'
 
 require 'ringo/scanner/lox_scanner'

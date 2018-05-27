@@ -123,5 +123,10 @@ RSpec.describe Ringo::Interpreter::LoxInterpreter do
       statements = make_statements('fun addtwo(num) { return num + 2; } print addtwo(4);', subject)
       expect{subject.interpret(statements)}.to output("6.0\n").to_stdout
     end
+
+    it 'can print a class name' do
+      statements = make_statements('class Testing { test() { return "Success"; } } print Testing;', subject)
+      expect{subject.interpret(statements)}.to output("Testing\n").to_stdout
+    end
   end
 end

@@ -105,3 +105,9 @@ block:
   extends: Ringo::Stmt
   attributes:
     statements: Ringo::Stmt
+
+class:
+  extends: Ringo::Stmt
+  attributes:
+    name: Ringo::Token
+    methods: Ringo::Stmt

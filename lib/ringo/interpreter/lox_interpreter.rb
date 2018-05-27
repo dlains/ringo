@@ -24,6 +24,14 @@ module Ringo::Interpreter
       Ringo.runtime_error(error)
     end
 
+    # Handle class declarations.
+    def visit_class(statement)
+      @environment.define(statement.name, nil)
+      klass = Ringo::LoxClass.new(statement.name)
+      @environment.assign(statement.name, klass)
+      return nil
+    end
+
     # Handle function declarations. Create a LoxFunction and store it
     # in the environment.
     def visit_function(statement)

@@ -7,9 +7,11 @@ module Ringo::Parser
   #
   # The current grammar is as follows:
   # program              -> declaration* EOF ;
-  # declaration          -> funDecl
+  # declaration          -> classDecl
+  #                       | funDecl
   #                       | varDecl
   #                       | statement ;
+  # classDecl            -> 'class' IDENTIFIER '{' function* '}' ;
   # funDecl              -> 'fun' function ;
   # function             -> IDENTIFIER '(' parameters? ')' block ;
   # parameters           -> IDENTIFIER ( ',' IDENTIFIER )* ;
@@ -146,12 +148,26 @@ module Ringo::Parser
 
     # Top level Lox grammar rule. A full program is a list of declarations.
     def declaration
+      return class_declaration if match?(:class)
       return function_declaration('function') if match?(:fun)
       return var_declaration if match?(:var)
       return statement
     rescue Ringo::Errors::ParseError => error
       synchronize
       return nil
+    end
+
+    # Create a new class.
+    def class_declaration
+      name = consume(:identifier, 'Expect class name.')
+      consume(:lbrace, "Expect '{' before class body.")
+      methods = []
+      while !check?(:rbrace) && !at_end?
+        methods << function_declaration('method')
+      end
+
+      consume(:rbrace, "Expect '}' after class body.")
+      return Ringo::Class.new(name, methods)
     end
 
     # Create a new function.
