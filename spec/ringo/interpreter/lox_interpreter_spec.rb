@@ -128,5 +128,10 @@ RSpec.describe Ringo::Interpreter::LoxInterpreter do
       statements = make_statements('class Testing { test() { return "Success"; } } print Testing;', subject)
       expect{subject.interpret(statements)}.to output("Testing\n").to_stdout
     end
+
+    it 'can instantiate a class' do
+      statements = make_statements('class Testing {} var test = Testing(); print test;', subject)
+      expect{subject.interpret(statements)}.to output("Testing instance\n").to_stdout
+    end
   end
 end
