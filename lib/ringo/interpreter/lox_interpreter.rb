@@ -177,6 +177,16 @@ module Ringo::Interpreter
       function.call(self, arguments)
     end
 
+    # Handle object property access.
+    def visit_get(expression)
+      object = evaluate(expression.object)
+      if object.is_a?(Ringo::LoxInstance)
+        return object.get(expression.name)
+      end
+
+      raise Ringo::Errors::RuntimeError.new(expression.name, "Only object instances have properties.")
+    end
+
     # Handle assignment expressions. This re-assigns a new value to an existing
     # variable. If the variable name does not exist already a runtime error is raised.
     def visit_assign(assignment)
@@ -209,6 +219,19 @@ module Ringo::Interpreter
       end
 
       return evaluate(logical.right)
+    end
+
+    # Handle object property assignment.
+    def visit_set(expression)
+      object = evaluate(expression.object)
+
+      if !object.is_a?(Ringo::LoxInstance)
+        raise Ringo::Errors::RuntimeError.new(expression.name, "Only objext instances have fields.")
+      end
+
+      value = evaluate(expression.value)
+      object.set(expression.name, value)
+      return value
     end
 
     # Handle unary expressions.

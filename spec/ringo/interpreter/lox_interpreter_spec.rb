@@ -133,5 +133,10 @@ RSpec.describe Ringo::Interpreter::LoxInterpreter do
       statements = make_statements('class Testing {} var test = Testing(); print test;', subject)
       expect{subject.interpret(statements)}.to output("Testing instance\n").to_stdout
     end
+
+    it 'can set and get a property' do
+      statements = make_statements('class Testing {} var test = Testing(); test.data = "data"; print test.data;', subject)
+      expect{subject.interpret(statements)}.to output("data\n").to_stdout
+    end
   end
 end

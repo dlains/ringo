@@ -108,6 +108,11 @@ module Ringo::Resolver
       return nil
     end
 
+    def visit_get(expression)
+      resolve_expr(expression.object)
+      return nil
+    end
+
     def visit_conditional(expression)
       resolve_expr(expression.expression)
       resolve_expr(expression.then_branch)
@@ -127,6 +132,12 @@ module Ringo::Resolver
     def visit_logical(expression)
       resolve_expr(expression.left)
       resolve_expr(expression.right)
+      return nil
+    end
+
+    def visit_set(expression)
+      resolve_expr(expression.value)
+      resolve_expr(expression.object)
       return nil
     end
 

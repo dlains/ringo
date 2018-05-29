@@ -32,7 +32,7 @@ module Ringo::Parser
   # block                -> '{' declaration* '}' ;
   # expression           -> comma
   # comma                -> assignment (',' assignment)* ;
-  # assignment           -> identifier '=' assignment | comparison ;
+  # assignment           -> ( call '.')? identifier '=' assignment | comparison ;
   # conditional          -> logicOr ('?' expression ':' conditional)? ;
   # logicOr              -> logicAnd ( 'or' logicAnd )* ;
   # logicAnd             -> equality ( 'and' equality )* ;
@@ -42,7 +42,7 @@ module Ringo::Parser
   # multiplication       -> unary ( ( "/" | "*" ) unary )* ;
   # unary                -> ( "!" | "-" ) unary
   #                       | call ;
-  # call                 -> primary ( '(' arguments? ')' )* ;
+  # call                 -> primary ( '(' arguments? ')' | '.' IDENTIFIER )* ;
   # arguments            -> expression ( ',' expression )* ;
   # primary              -> NUMBER | STRING | 'false' | 'true' | 'nil'
   #                       | '(' expression ')'
@@ -345,6 +345,8 @@ module Ringo::Parser
         if expr.is_a?(Ringo::Variable)
           name = expr.name
           return Ringo::Assign.new(name, value)
+        elsif expr.is_a?(Ringo::Get)
+          return Ringo::Set.new(expr.object, expr.name, value)
         end
 
         error(equals, "Invalid assignment target.")
@@ -463,6 +465,9 @@ module Ringo::Parser
       while(true)
         if match?(:lparen)
           expr = finish_call(expr)
+        elsif match?(:dot)
+          name = consume(:identifier, "Expect property after '.'.")
+          expr = Ringo::Get.new(expr, name)
         else
           break;
         end
