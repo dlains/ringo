@@ -7,6 +7,10 @@ module Ringo
 
     def get(token)
       return @fields[token.lexeme] if @fields.has_key?(token.lexeme)
+
+      method = @klass.find_method(self, token.lexeme)
+      return method unless method.nil?
+
       raise Ringo::Errors::RuntimeError.new(token, "Undefined property #{token.lexeme}.")
     end
 

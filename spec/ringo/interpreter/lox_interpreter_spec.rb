@@ -138,5 +138,10 @@ RSpec.describe Ringo::Interpreter::LoxInterpreter do
       statements = make_statements('class Testing {} var test = Testing(); test.data = "data"; print test.data;', subject)
       expect{subject.interpret(statements)}.to output("data\n").to_stdout
     end
+
+    it 'can call a method on an instance' do
+      statements = make_statements('class Testing { run() { print "Running!"; } } Testing().run();', subject)
+      expect{subject.interpret(statements)}.to output("Running!\n").to_stdout
+    end
   end
 end

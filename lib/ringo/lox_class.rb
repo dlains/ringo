@@ -1,9 +1,10 @@
 module Ringo
   class LoxClass < LoxCallable
-    attr_reader :name
+    attr_reader :name, :methods
 
-    def initialize(name)
+    def initialize(name, methods)
       @name = name.lexeme
+      @methods = methods
     end
 
     def arity
@@ -12,6 +13,11 @@ module Ringo
 
     def call(interpreter, arguments)
       Ringo::LoxInstance.new(self)
+    end
+
+    def find_method(instance, name)
+      return @methods[name] if @methods.has_key?(name)
+      return nil
     end
 
     def to_s

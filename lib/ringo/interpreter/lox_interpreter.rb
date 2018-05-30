@@ -27,7 +27,14 @@ module Ringo::Interpreter
     # Handle class declarations.
     def visit_class(statement)
       @environment.define(statement.name, nil)
-      klass = Ringo::LoxClass.new(statement.name)
+
+      methods = {}
+      statement.methods.each do |method|
+        function = Ringo::LoxFunction.new(method, @environment)
+        methods[method.name.lexeme] = function
+      end
+
+      klass = Ringo::LoxClass.new(statement.name, methods)
       @environment.assign(statement.name, klass)
       return nil
     end

@@ -4,6 +4,7 @@ module Ringo::Resolver
     # that are not within an actual function.
     FUNCTION_TYPE_NONE = 1
     FUNCTION_TYPE_FUNCTION = 2
+    FUNCTION_TYPE_METHOD = 3
 
     def initialize(interpreter)
       @interpreter = interpreter
@@ -59,6 +60,11 @@ module Ringo::Resolver
     def visit_class(statement)
       declare(statement.name)
       define(statement.name)
+
+      statement.methods.each do |method|
+        resolve_function(method, FUNCTION_TYPE_METHOD)
+      end
+
       return nil
     end
 
