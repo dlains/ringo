@@ -500,6 +500,7 @@ module Ringo::Parser
       return Ringo::Literal.new(true)  if match?(:true)
       return Ringo::Literal.new(nil)   if match?(:nil)
       return Ringo::Literal.new(previous.literal) if match?(:number, :string)
+      return Ringo::This.new(previous) if match?(:this)
       return Ringo::Variable.new(previous) if match?(:identifier)
 
       if match?(:lparen)

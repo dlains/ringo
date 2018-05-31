@@ -16,7 +16,7 @@ module Ringo
     end
 
     def find_method(instance, name)
-      return @methods[name] if @methods.has_key?(name)
+      return @methods[name].bind(instance) if @methods.has_key?(name)
       return nil
     end
 

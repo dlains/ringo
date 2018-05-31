@@ -241,6 +241,11 @@ module Ringo::Interpreter
       return value
     end
 
+    # Handle references to 'this'.
+    def visit_this(expression)
+      return lookup_variable(expression.keyword, expression)
+    end
+
     # Handle unary expressions.
     def visit_unary(unary)
       right = evaluate(unary.right)

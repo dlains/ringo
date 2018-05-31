@@ -24,6 +24,12 @@ module Ringo
       return nil
     end
 
+    def bind(instance)
+      environment = Ringo::Environment.new(@closure)
+      environment.define(Ringo::Token.new(:this, 'this', nil, 1), instance)
+      return Ringo::LoxFunction.new(@declaration, environment)
+    end
+
     def to_s
       "<fn #{@declaration.name.lexeme}>"
     end

@@ -6,10 +6,16 @@ module Ringo::Resolver
     FUNCTION_TYPE_FUNCTION = 2
     FUNCTION_TYPE_METHOD = 3
 
+    # Class type constants allow the code to detect 'this' references
+    # that are not part of a class.
+    CLASS_TYPE_NONE = 1
+    CLASS_TYPE_CLASS = 2
+
     def initialize(interpreter)
       @interpreter = interpreter
       @scopes = []
       @current_function_type = FUNCTION_TYPE_NONE
+      @current_class_type = CLASS_TYPE_NONE
     end
 
     def resolve(statements)
@@ -61,9 +67,18 @@ module Ringo::Resolver
       declare(statement.name)
       define(statement.name)
 
+      enclosing_class = @current_class_type
+      @current_class_type = CLASS_TYPE_CLASS
+
+      begin_scope
+      @scopes.last['this'] = true
+
       statement.methods.each do |method|
         resolve_function(method, FUNCTION_TYPE_METHOD)
       end
+
+      end_scope
+      @current_class_type = enclosing_class
 
       return nil
     end
@@ -144,6 +159,16 @@ module Ringo::Resolver
     def visit_set(expression)
       resolve_expr(expression.value)
       resolve_expr(expression.object)
+      return nil
+    end
+
+    def visit_this(expression)
+      if @current_class_type == CLASS_TYPE_NONE
+        Ringo.error(expression.keyword, "Cannot use 'this' outside of a class.")
+        return nil
+      end
+
+      resolve_local(expression, expression.keyword)
       return nil
     end
 

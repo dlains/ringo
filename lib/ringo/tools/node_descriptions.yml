@@ -58,6 +58,11 @@ set:
     name: Ringo::Token
     value: Ringo::Expr
 
+this:
+  extends: Ringo::Expr
+  attributes:
+    keyword: Ringo::Token
+
 unary:
   extends: Ringo::Expr
   attributes:

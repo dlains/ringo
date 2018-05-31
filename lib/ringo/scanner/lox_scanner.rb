@@ -175,7 +175,7 @@ module Ringo::Scanner
       end
 
       if at_end?
-        Ringo.error(line, 'Unterminated string found.')
+        Ringo.error(Ringo::Token.new(:quote, '"', nil, @line), 'Unterminated string found.')
         return
       end
 

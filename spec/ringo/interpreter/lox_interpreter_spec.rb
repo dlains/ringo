@@ -143,5 +143,10 @@ RSpec.describe Ringo::Interpreter::LoxInterpreter do
       statements = make_statements('class Testing { run() { print "Running!"; } } Testing().run();', subject)
       expect{subject.interpret(statements)}.to output("Running!\n").to_stdout
     end
+
+    it 'can handle this references' do
+      statements = make_statements('class Cake { taste() { var adj = "delicious"; print "The " + this.flavor + " cake is " + adj + "!"; } } var cake = Cake(); cake.flavor = "Red Velvet"; cake.taste();', subject)
+      expect{subject.interpret(statements)}.to output("The Red Velvet cake is delicious!\n").to_stdout
+    end
   end
 end
