@@ -7,9 +7,11 @@ module Ringo::Parser
   #
   # The current grammar is as follows:
   # program              -> declaration* EOF ;
-  # declaration          -> funDecl
+  # declaration          -> classDecl
+  #                       | funDecl
   #                       | varDecl
   #                       | statement ;
+  # classDecl            -> 'class' IDENTIFIER '{' function* '}' ;
   # funDecl              -> 'fun' function ;
   # function             -> IDENTIFIER '(' parameters? ')' block ;
   # parameters           -> IDENTIFIER ( ',' IDENTIFIER )* ;
@@ -30,7 +32,7 @@ module Ringo::Parser
   # block                -> '{' declaration* '}' ;
   # expression           -> comma
   # comma                -> assignment (',' assignment)* ;
-  # assignment           -> identifier '=' assignment | comparison ;
+  # assignment           -> ( call '.')? identifier '=' assignment | comparison ;
   # conditional          -> logicOr ('?' expression ':' conditional)? ;
   # logicOr              -> logicAnd ( 'or' logicAnd )* ;
   # logicAnd             -> equality ( 'and' equality )* ;
@@ -40,7 +42,7 @@ module Ringo::Parser
   # multiplication       -> unary ( ( "/" | "*" ) unary )* ;
   # unary                -> ( "!" | "-" ) unary
   #                       | call ;
-  # call                 -> primary ( '(' arguments? ')' )* ;
+  # call                 -> primary ( '(' arguments? ')' | '.' IDENTIFIER )* ;
   # arguments            -> expression ( ',' expression )* ;
   # primary              -> NUMBER | STRING | 'false' | 'true' | 'nil'
   #                       | '(' expression ')'
@@ -146,12 +148,26 @@ module Ringo::Parser
 
     # Top level Lox grammar rule. A full program is a list of declarations.
     def declaration
+      return class_declaration if match?(:class)
       return function_declaration('function') if match?(:fun)
       return var_declaration if match?(:var)
       return statement
     rescue Ringo::Errors::ParseError => error
       synchronize
       return nil
+    end
+
+    # Create a new class.
+    def class_declaration
+      name = consume(:identifier, 'Expect class name.')
+      consume(:lbrace, "Expect '{' before class body.")
+      methods = []
+      while !check?(:rbrace) && !at_end?
+        methods << function_declaration('method')
+      end
+
+      consume(:rbrace, "Expect '}' after class body.")
+      return Ringo::Class.new(name, methods)
     end
 
     # Create a new function.
@@ -329,6 +345,8 @@ module Ringo::Parser
         if expr.is_a?(Ringo::Variable)
           name = expr.name
           return Ringo::Assign.new(name, value)
+        elsif expr.is_a?(Ringo::Get)
+          return Ringo::Set.new(expr.object, expr.name, value)
         end
 
         error(equals, "Invalid assignment target.")
@@ -447,6 +465,9 @@ module Ringo::Parser
       while(true)
         if match?(:lparen)
           expr = finish_call(expr)
+        elsif match?(:dot)
+          name = consume(:identifier, "Expect property after '.'.")
+          expr = Ringo::Get.new(expr, name)
         else
           break;
         end
@@ -479,6 +500,7 @@ module Ringo::Parser
       return Ringo::Literal.new(true)  if match?(:true)
       return Ringo::Literal.new(nil)   if match?(:nil)
       return Ringo::Literal.new(previous.literal) if match?(:number, :string)
+      return Ringo::This.new(previous) if match?(:this)
       return Ringo::Variable.new(previous) if match?(:identifier)
 
       if match?(:lparen)

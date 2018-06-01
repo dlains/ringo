@@ -24,10 +24,25 @@ module Ringo::Interpreter
       Ringo.runtime_error(error)
     end
 
+    # Handle class declarations.
+    def visit_class(statement)
+      @environment.define(statement.name, nil)
+
+      methods = {}
+      statement.methods.each do |method|
+        function = Ringo::LoxFunction.new(method, @environment, method.name.lexeme == 'init')
+        methods[method.name.lexeme] = function
+      end
+
+      klass = Ringo::LoxClass.new(statement.name, methods)
+      @environment.assign(statement.name, klass)
+      return nil
+    end
+
     # Handle function declarations. Create a LoxFunction and store it
     # in the environment.
     def visit_function(statement)
-      function = Ringo::LoxFunction.new(statement, @environment)
+      function = Ringo::LoxFunction.new(statement, @environment, false)
       @environment.define(statement.name, function)
       return nil
     end
@@ -169,6 +184,16 @@ module Ringo::Interpreter
       function.call(self, arguments)
     end
 
+    # Handle object property access.
+    def visit_get(expression)
+      object = evaluate(expression.object)
+      if object.is_a?(Ringo::LoxInstance)
+        return object.get(expression.name)
+      end
+
+      raise Ringo::Errors::RuntimeError.new(expression.name, "Only object instances have properties.")
+    end
+
     # Handle assignment expressions. This re-assigns a new value to an existing
     # variable. If the variable name does not exist already a runtime error is raised.
     def visit_assign(assignment)
@@ -201,6 +226,24 @@ module Ringo::Interpreter
       end
 
       return evaluate(logical.right)
+    end
+
+    # Handle object property assignment.
+    def visit_set(expression)
+      object = evaluate(expression.object)
+
+      if !object.is_a?(Ringo::LoxInstance)
+        raise Ringo::Errors::RuntimeError.new(expression.name, "Only objext instances have fields.")
+      end
+
+      value = evaluate(expression.value)
+      object.set(expression.name, value)
+      return value
+    end
+
+    # Handle references to 'this'.
+    def visit_this(expression)
+      return lookup_variable(expression.keyword, expression)
     end
 
     # Handle unary expressions.

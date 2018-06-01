@@ -21,6 +21,12 @@ call:
     paren: Ringo::Token
     arguments: Ringo::Expr
 
+get:
+  extends: Ringo::Expr
+  attributes:
+    object: Ringo::Expr
+    name: Ringo::Token
+
 conditional:
   extends: Ringo::Expr
   attributes:
@@ -44,6 +50,18 @@ logical:
     left: Ringo::Expr
     operator: Ringo::Token
     right: Ringo::Expr
+
+set:
+  extends: Ringo::Expr
+  attributes:
+    object: Ringo::Expr
+    name: Ringo::Token
+    value: Ringo::Expr
+
+this:
+  extends: Ringo::Expr
+  attributes:
+    keyword: Ringo::Token
 
 unary:
   extends: Ringo::Expr
@@ -105,3 +123,9 @@ block:
   extends: Ringo::Stmt
   attributes:
     statements: Ringo::Stmt
+
+class:
+  extends: Ringo::Stmt
+  attributes:
+    name: Ringo::Token
+    methods: Ringo::Stmt

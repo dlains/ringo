@@ -4,11 +4,19 @@ module Ringo::Resolver
     # that are not within an actual function.
     FUNCTION_TYPE_NONE = 1
     FUNCTION_TYPE_FUNCTION = 2
+    FUNCTION_TYPE_INITIALIZER = 3
+    FUNCTION_TYPE_METHOD = 4
+
+    # Class type constants allow the code to detect 'this' references
+    # that are not part of a class.
+    CLASS_TYPE_NONE = 1
+    CLASS_TYPE_CLASS = 2
 
     def initialize(interpreter)
       @interpreter = interpreter
       @scopes = []
       @current_function_type = FUNCTION_TYPE_NONE
+      @current_class_type = CLASS_TYPE_NONE
     end
 
     def resolve(statements)
@@ -56,6 +64,27 @@ module Ringo::Resolver
       return nil
     end
 
+    def visit_class(statement)
+      declare(statement.name)
+      define(statement.name)
+
+      enclosing_class = @current_class_type
+      @current_class_type = CLASS_TYPE_CLASS
+
+      begin_scope
+      @scopes.last['this'] = true
+
+      statement.methods.each do |method|
+        type = method.name.lexeme == 'init' ? FUNCTION_TYPE_INITIALIZER : FUNCTION_TYPE_METHOD
+        resolve_function(method, type)
+      end
+
+      end_scope
+      @current_class_type = enclosing_class
+
+      return nil
+    end
+
     def visit_expression(statement)
       resolve_stmt(statement.expression)
       return nil
@@ -77,7 +106,13 @@ module Ringo::Resolver
       if @current_function_type == FUNCTION_TYPE_NONE
         Ringo.error(statement.keyword, "Can not return from top-level code.")
       end
-      resolve_stmt(statement.value) unless statement.value.nil?
+      if !statement.value.nil?
+        if @current_function_type == FUNCTION_TYPE_INITIALIZER
+          Ringo.error(statement.keyword, "Cannot return a value from an initializer.")
+        end
+      end
+
+      resolve_stmt(statement.value)
       return nil
     end
 
@@ -102,6 +137,11 @@ module Ringo::Resolver
       return nil
     end
 
+    def visit_get(expression)
+      resolve_expr(expression.object)
+      return nil
+    end
+
     def visit_conditional(expression)
       resolve_expr(expression.expression)
       resolve_expr(expression.then_branch)
@@ -121,6 +161,22 @@ module Ringo::Resolver
     def visit_logical(expression)
       resolve_expr(expression.left)
       resolve_expr(expression.right)
+      return nil
+    end
+
+    def visit_set(expression)
+      resolve_expr(expression.value)
+      resolve_expr(expression.object)
+      return nil
+    end
+
+    def visit_this(expression)
+      if @current_class_type == CLASS_TYPE_NONE
+        Ringo.error(expression.keyword, "Cannot use 'this' outside of a class.")
+        return nil
+      end
+
+      resolve_local(expression, expression.keyword)
       return nil
     end
 

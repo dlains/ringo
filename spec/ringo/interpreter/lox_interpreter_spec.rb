@@ -123,5 +123,30 @@ RSpec.describe Ringo::Interpreter::LoxInterpreter do
       statements = make_statements('fun addtwo(num) { return num + 2; } print addtwo(4);', subject)
       expect{subject.interpret(statements)}.to output("6.0\n").to_stdout
     end
+
+    it 'can print a class name' do
+      statements = make_statements('class Testing { test() { return "Success"; } } print Testing;', subject)
+      expect{subject.interpret(statements)}.to output("Testing\n").to_stdout
+    end
+
+    it 'can instantiate a class' do
+      statements = make_statements('class Testing {} var test = Testing(); print test;', subject)
+      expect{subject.interpret(statements)}.to output("Testing instance\n").to_stdout
+    end
+
+    it 'can set and get a property' do
+      statements = make_statements('class Testing {} var test = Testing(); test.data = "data"; print test.data;', subject)
+      expect{subject.interpret(statements)}.to output("data\n").to_stdout
+    end
+
+    it 'can call a method on an instance' do
+      statements = make_statements('class Testing { run() { print "Running!"; } } Testing().run();', subject)
+      expect{subject.interpret(statements)}.to output("Running!\n").to_stdout
+    end
+
+    it 'can handle this references' do
+      statements = make_statements('class Cake { taste() { var adj = "delicious"; print "The " + this.flavor + " cake is " + adj + "!"; } } var cake = Cake(); cake.flavor = "Red Velvet"; cake.taste();', subject)
+      expect{subject.interpret(statements)}.to output("The Red Velvet cake is delicious!\n").to_stdout
+    end
   end
 end
