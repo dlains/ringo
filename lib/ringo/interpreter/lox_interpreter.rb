@@ -30,7 +30,7 @@ module Ringo::Interpreter
 
       methods = {}
       statement.methods.each do |method|
-        function = Ringo::LoxFunction.new(method, @environment)
+        function = Ringo::LoxFunction.new(method, @environment, method.name.lexeme == 'init')
         methods[method.name.lexeme] = function
       end
 
@@ -42,7 +42,7 @@ module Ringo::Interpreter
     # Handle function declarations. Create a LoxFunction and store it
     # in the environment.
     def visit_function(statement)
-      function = Ringo::LoxFunction.new(statement, @environment)
+      function = Ringo::LoxFunction.new(statement, @environment, false)
       @environment.define(statement.name, function)
       return nil
     end

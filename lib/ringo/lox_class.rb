@@ -8,11 +8,16 @@ module Ringo
     end
 
     def arity
-      return 0
+      initializer = @methods['init']
+      return 0 if initializer.nil?
+      return initializer.arity
     end
 
     def call(interpreter, arguments)
-      Ringo::LoxInstance.new(self)
+      instance = Ringo::LoxInstance.new(self)
+      initializer = @methods['init']
+      initializer.bind(instance).call(interpreter, arguments) unless initializer.nil?
+      return instance
     end
 
     def find_method(instance, name)
