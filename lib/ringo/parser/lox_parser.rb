@@ -11,7 +11,7 @@ module Ringo::Parser
   #                       | funDecl
   #                       | varDecl
   #                       | statement ;
-  # classDecl            -> 'class' IDENTIFIER '{' function* '}' ;
+  # classDecl            -> 'class' IDENTIFIER ( '<' IDENTIFIER )? '{' function* '}' ;
   # funDecl              -> 'fun' function ;
   # function             -> IDENTIFIER '(' parameters? ')' block ;
   # parameters           -> IDENTIFIER ( ',' IDENTIFIER )* ;
@@ -160,6 +160,13 @@ module Ringo::Parser
     # Create a new class.
     def class_declaration
       name = consume(:identifier, 'Expect class name.')
+
+      superclass = nil
+      if match?(:less)
+        consume(:identifier, "Expect superclass name.")
+        superclass = Ringo::Variable.new(previous)
+      end
+
       consume(:lbrace, "Expect '{' before class body.")
       methods = []
       while !check?(:rbrace) && !at_end?
@@ -167,7 +174,7 @@ module Ringo::Parser
       end
 
       consume(:rbrace, "Expect '}' after class body.")
-      return Ringo::Class.new(name, methods)
+      return Ringo::Class.new(name, superclass, methods)
     end
 
     # Create a new function.

@@ -128,4 +128,5 @@ class:
   extends: Ringo::Stmt
   attributes:
     name: Ringo::Token
+    superclass: Ringo::Variable
     methods: Ringo::Stmt

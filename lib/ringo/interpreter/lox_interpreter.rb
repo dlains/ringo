@@ -28,13 +28,21 @@ module Ringo::Interpreter
     def visit_class(statement)
       @environment.define(statement.name, nil)
 
+      superclass = nil
+      if !statement.superclass.nil?
+        superclass = evaluate(statement.superclass)
+        if !superclass.is_a?(Ringo::LoxClass)
+          raise Ringo::Errors::RuntimeError(statement.superclass.name, "Superclass must be a class.")
+        end
+      end
+
       methods = {}
       statement.methods.each do |method|
         function = Ringo::LoxFunction.new(method, @environment, method.name.lexeme == 'init')
         methods[method.name.lexeme] = function
       end
 
-      klass = Ringo::LoxClass.new(statement.name, methods)
+      klass = Ringo::LoxClass.new(statement.name, superclass, methods)
       @environment.assign(statement.name, klass)
       return nil
     end

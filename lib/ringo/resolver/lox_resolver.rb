@@ -71,6 +71,8 @@ module Ringo::Resolver
       enclosing_class = @current_class_type
       @current_class_type = CLASS_TYPE_CLASS
 
+      resolve_statement(statement.superclass) unless statement.superclass.nil?
+
       begin_scope
       @scopes.last['this'] = true
 

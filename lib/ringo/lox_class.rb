@@ -2,8 +2,9 @@ module Ringo
   class LoxClass < LoxCallable
     attr_reader :name, :methods
 
-    def initialize(name, methods)
+    def initialize(name, superclass, methods)
       @name = name.lexeme
+      @superclass = superclass
       @methods = methods
     end
 
