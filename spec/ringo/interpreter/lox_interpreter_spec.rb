@@ -148,5 +148,15 @@ RSpec.describe Ringo::Interpreter::LoxInterpreter do
       statements = make_statements('class Cake { taste() { var adj = "delicious"; print "The " + this.flavor + " cake is " + adj + "!"; } } var cake = Cake(); cake.flavor = "Red Velvet"; cake.taste();', subject)
       expect{subject.interpret(statements)}.to output("The Red Velvet cake is delicious!\n").to_stdout
     end
+
+    it 'can call methods in the super class' do
+      statements = make_statements('class Doughnut { cook() { print "Frying..."; } } class BostonCream < Doughnut {} BostonCream().cook();', subject)
+      expect{subject.interpret(statements)}.to output("Frying...\n").to_stdout
+    end
+
+    it 'can use super within subclass methods' do
+      statements = make_statements('class Doughnut { cook() { print "Frying..."; } } class BostonCream < Doughnut { cook() { super.cook(); print "Fill..."; } } BostonCream().cook();', subject)
+      expect{subject.interpret(statements)}.to output("Frying...\nFill...\n").to_stdout
+    end
   end
 end

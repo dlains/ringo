@@ -44,9 +44,10 @@ module Ringo::Parser
   #                       | call ;
   # call                 -> primary ( '(' arguments? ')' | '.' IDENTIFIER )* ;
   # arguments            -> expression ( ',' expression )* ;
-  # primary              -> NUMBER | STRING | 'false' | 'true' | 'nil'
+  # primary              -> NUMBER | STRING | 'false' | 'true' | 'nil' | 'this'
   #                       | '(' expression ')'
   #                       | IDENTIFIER
+  #                       | 'super' '.' IDENTIFIER
   class LoxParser
     def initialize(tokens)
       @tokens = tokens
@@ -509,6 +510,13 @@ module Ringo::Parser
       return Ringo::Literal.new(previous.literal) if match?(:number, :string)
       return Ringo::This.new(previous) if match?(:this)
       return Ringo::Variable.new(previous) if match?(:identifier)
+
+      if match?(:super)
+        keyword = previous
+        consume(:dot, "Expect '.' after 'super'.")
+        method = consume(:identifier, "Expect superclass method name.")
+        return Ringo::Super.new(keyword, method)
+      end
 
       if match?(:lparen)
         expr = expression
