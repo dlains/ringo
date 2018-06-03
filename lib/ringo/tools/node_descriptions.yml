@@ -58,6 +58,12 @@ set:
     name: Ringo::Token
     value: Ringo::Expr
 
+super:
+  extends: Ringo::Expr
+  attributes:
+    keyword: Ringo::Token
+    method: Ringo::Token
+
 this:
   extends: Ringo::Expr
   attributes:
@@ -128,4 +134,5 @@ class:
   extends: Ringo::Stmt
   attributes:
     name: Ringo::Token
+    superclass: Ringo::Variable
     methods: Ringo::Stmt

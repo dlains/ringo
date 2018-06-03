@@ -1,3 +1,8 @@
+
+def visit_super(expression)
+  resolve_local(expression, expression.keyword)
+  return nil
+  end
 module Ringo::Interpreter
 
   # The LoxInterpreter is a tree walk interpreter for the Lox language. It uses the
@@ -28,13 +33,27 @@ module Ringo::Interpreter
     def visit_class(statement)
       @environment.define(statement.name, nil)
 
+      superclass = nil
+      if !statement.superclass.nil?
+        superclass = evaluate(statement.superclass)
+        if !superclass.is_a?(Ringo::LoxClass)
+          raise Ringo::Errors::RuntimeError(statement.superclass.name, "Superclass must be a class.")
+        end
+
+        @environment = Ringo::Environment.new(@environment)
+        @environment.define(Ringo::Token.new(:super, 'super', nil, 1), superclass)
+      end
+
       methods = {}
       statement.methods.each do |method|
         function = Ringo::LoxFunction.new(method, @environment, method.name.lexeme == 'init')
         methods[method.name.lexeme] = function
       end
 
-      klass = Ringo::LoxClass.new(statement.name, methods)
+      klass = Ringo::LoxClass.new(statement.name, superclass, methods)
+
+      @environment = @environment.enclosing unless superclass.nil?
+
       @environment.assign(statement.name, klass)
       return nil
     end
@@ -239,6 +258,20 @@ module Ringo::Interpreter
       value = evaluate(expression.value)
       object.set(expression.name, value)
       return value
+    end
+
+    def visit_super(expression)
+      distance = @locals[expression]
+      superclass = @environment.get_at(distance, Ringo::Token.new(:super, 'super', nil, 1))
+
+      object = @environment.get_at(distance - 1, Ringo::Token.new(:this, 'this', nil, 1))
+
+      method = superclass.find_method(object, expression.method.lexeme)
+
+      if method.nil?
+        raise Ringo::Errors::RuntimeError.new(expression.method, "Undefined method #{expression.method.lexeme}.")
+      end
+      return method
     end
 
     # Handle references to 'this'.

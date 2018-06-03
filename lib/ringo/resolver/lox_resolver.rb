@@ -11,6 +11,7 @@ module Ringo::Resolver
     # that are not part of a class.
     CLASS_TYPE_NONE = 1
     CLASS_TYPE_CLASS = 2
+    CLASS_TYPE_SUBCLASS = 3
 
     def initialize(interpreter)
       @interpreter = interpreter
@@ -71,6 +72,13 @@ module Ringo::Resolver
       enclosing_class = @current_class_type
       @current_class_type = CLASS_TYPE_CLASS
 
+      if !statement.superclass.nil?
+        @current_class_type = CLASS_TYPE_SUBCLASS
+        resolve_stmt(statement.superclass)
+        begin_scope
+        @scopes.last['super'] = true
+      end
+
       begin_scope
       @scopes.last['this'] = true
 
@@ -80,6 +88,11 @@ module Ringo::Resolver
       end
 
       end_scope
+
+      if !statement.superclass.nil?
+        end_scope
+      end
+
       @current_class_type = enclosing_class
 
       return nil
@@ -167,6 +180,16 @@ module Ringo::Resolver
     def visit_set(expression)
       resolve_expr(expression.value)
       resolve_expr(expression.object)
+      return nil
+    end
+
+    def visit_super(expression)
+      if @current_class_type == CLASS_TYPE_NONE
+        Ringo.error(expression.keyword, "Cannot use 'super' outside of a class.")
+      elsif @current_class_type != CLASS_TYPE_SUBCLASS
+        Ringo.error(expression.keyword, "Cannot use 'super' in a class with no superclass.")
+      end
+      resolve_local(expression, expression.keyword)
       return nil
     end
 

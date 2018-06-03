@@ -11,7 +11,7 @@ module Ringo::Parser
   #                       | funDecl
   #                       | varDecl
   #                       | statement ;
-  # classDecl            -> 'class' IDENTIFIER '{' function* '}' ;
+  # classDecl            -> 'class' IDENTIFIER ( '<' IDENTIFIER )? '{' function* '}' ;
   # funDecl              -> 'fun' function ;
   # function             -> IDENTIFIER '(' parameters? ')' block ;
   # parameters           -> IDENTIFIER ( ',' IDENTIFIER )* ;
@@ -44,9 +44,10 @@ module Ringo::Parser
   #                       | call ;
   # call                 -> primary ( '(' arguments? ')' | '.' IDENTIFIER )* ;
   # arguments            -> expression ( ',' expression )* ;
-  # primary              -> NUMBER | STRING | 'false' | 'true' | 'nil'
+  # primary              -> NUMBER | STRING | 'false' | 'true' | 'nil' | 'this'
   #                       | '(' expression ')'
   #                       | IDENTIFIER
+  #                       | 'super' '.' IDENTIFIER
   class LoxParser
     def initialize(tokens)
       @tokens = tokens
@@ -160,6 +161,13 @@ module Ringo::Parser
     # Create a new class.
     def class_declaration
       name = consume(:identifier, 'Expect class name.')
+
+      superclass = nil
+      if match?(:less)
+        consume(:identifier, "Expect superclass name.")
+        superclass = Ringo::Variable.new(previous)
+      end
+
       consume(:lbrace, "Expect '{' before class body.")
       methods = []
       while !check?(:rbrace) && !at_end?
@@ -167,7 +175,7 @@ module Ringo::Parser
       end
 
       consume(:rbrace, "Expect '}' after class body.")
-      return Ringo::Class.new(name, methods)
+      return Ringo::Class.new(name, superclass, methods)
     end
 
     # Create a new function.
@@ -502,6 +510,13 @@ module Ringo::Parser
       return Ringo::Literal.new(previous.literal) if match?(:number, :string)
       return Ringo::This.new(previous) if match?(:this)
       return Ringo::Variable.new(previous) if match?(:identifier)
+
+      if match?(:super)
+        keyword = previous
+        consume(:dot, "Expect '.' after 'super'.")
+        method = consume(:identifier, "Expect superclass method name.")
+        return Ringo::Super.new(keyword, method)
+      end
 
       if match?(:lparen)
         expr = expression
