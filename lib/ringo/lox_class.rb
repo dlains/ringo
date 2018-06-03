@@ -23,6 +23,7 @@ module Ringo
 
     def find_method(instance, name)
       return @methods[name].bind(instance) if @methods.has_key?(name)
+      return @superclass.find_method(instance, name)
       return nil
     end
 
