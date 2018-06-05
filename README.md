@@ -1,34 +1,27 @@
 # Ringo
 
-This is my version of the Lox language from [Crafting Interpreters](http://craftinginterpreters.com). It is just
-a fun little side project for learning how interpreters and compilers work.
+This is my version of the Lox language from [Crafting Interpreters](http://craftinginterpreters.com). It is just a fun little side project for learning how interpreters and compilers work.
 
 ## Installation
 
-Add this line to your application's Gemfile:
-
-```ruby
-gem 'ringo'
-```
-
-And then execute:
-
-    $ bundle
-
-Or install it yourself as:
-
-    $ gem install ringo
+Stop! If you are looking for installation instructions for this project you are doing something wrong. I used the Bundler gem template simply for the handy project structure. This is not a live gem, and the language implemented is NOWHERE NEAR production ready.
 
 ## Usage
 
-TODO: Write usage instructions here
+If you are just poking around for fun you can test the interpreter with the simple.lox file. It was one of the final code examples from the tree walk section of the book. Follow the instructions below to install the dependencies and then run:
+
+```bash
+bundle exec ringo simple.lox
+```
+
+You can also start an interactive session like so:
+
+```bash
+bundle exec ringo
+```
+
+Enter 'exit' at the prompt to leave the interactive session.
 
 ## Development
 
 After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
-
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and tags, and push the `.gem` file to [rubygems.org](https://rubygems.org).
-
-## Contributing
-
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/ringo.

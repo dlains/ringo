@@ -1,4 +1,11 @@
 module Ringo
+
+  # Environment is, essentially, a Ruby Hash with support for creating a heirarchy.
+  # An environment provides a scoping mechanism for Lox. When the interpreter
+  # starts a top level global environment is created. Any time a new scope is
+  # entered a new environment is created and the current environment is passed in
+  # as the enclosing scope. This allows code is nested scopes to still access
+  # variabled defined in the global scope.
   class Environment
     attr_reader :values, :enclosing
 

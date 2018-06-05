@@ -1,4 +1,10 @@
 module Ringo
+
+  # LoxFunction represents a function call. It implements the interface in
+  # LoxCallable, which could probably be removed in this Ruby implementation.
+  # LoxFunctions hold the original declaration of the function, a closure
+  # around the environment available to the function at the time it is declared
+  # and a flag to determine if it is a regular function or a class initializer.
   class LoxFunction < LoxCallable
     def initialize(declaration, closure, is_initializer)
       @declaration = declaration

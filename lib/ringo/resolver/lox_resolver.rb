@@ -1,4 +1,8 @@
 module Ringo::Resolver
+
+  # The LoxResolver is a semantic analysis step. It walks the AST tree generated
+  # by the parser before the interpreter does and performs some scope analysis
+  # as well as checking for some static syntax errors.
   class LoxResolver
     # Function type constants allow the code to detect return statements
     # that are not within an actual function.
