@@ -4,8 +4,6 @@ module Ringo
 
   # Ringo::Runner kicks off the ringo interpreter process. It runs the given
   # script or starts an interactive session depending on the command line arguments.
-  # TODO: Figure out how to handle errors. The Ringo module has error reporting methods,
-  #       but they aren't being used yet.
   class Runner
 
     def run_file(file)

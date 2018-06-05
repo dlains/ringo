@@ -1,4 +1,9 @@
 module Ringo
+
+  # LoxClass is a runtime representation of a class in the Lox language. Runtime
+  # instances of a class store their data in the LoxInstance, but methods are
+  # stored in the LoxClass so they can be shared amongst all instances. LoxClass
+  # also provides support for calling methods in the superclass.
   class LoxClass < LoxCallable
     attr_reader :name, :methods
 

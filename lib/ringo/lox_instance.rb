@@ -1,4 +1,7 @@
 module Ringo
+
+  # LoxInstance represents a runtime instance of a LoxClass. It holds a reference
+  # to the class and any data for the instance.
   class LoxInstance
     def initialize(klass)
       @klass = klass
